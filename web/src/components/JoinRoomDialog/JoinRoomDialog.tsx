@@ -24,6 +24,8 @@ import Switch from '@mui/material/Switch';
 import LoadingButton from '@mui/lab/LoadingButton';
 import DoNotDisturbAltOutlinedIcon from '@mui/icons-material/DoNotDisturbAltOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
+import { red } from '@mui/material/colors';
+import { textTransform } from '@mui/system';
 
 
 const Transition = React.forwardRef(function Transition(
@@ -35,15 +37,12 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="down" ref={ref} {...props} />;
 });
 
-const Input = styled(MuiInput)`
-  width: 42px;
-`;
 
 const maxPlayerNameLength = (process.env.REACT_APP_PLAYER_NAME_LENGTH_MAX) ? parseInt(process.env.REACT_APP_PLAYER_NAME_LENGTH_MAX) : 20;
 
 export default function CreateNewRoomDialog(props: any) {
 
-    const [playerName, setPlayerName] = React.useState("Player 1");
+    const [playerName, setPlayerName] = React.useState("");
     const [playerNameErrorMessage, setPlayerNameErrorMessage] = React.useState("");
     const handlePlayerNameChange = (newValue: string) => {
         setPlayerName(newValue);
@@ -66,7 +65,7 @@ export default function CreateNewRoomDialog(props: any) {
     }, [playerName, playerNameErrorMessage]);
 
 
-    const [roomCode, setRoomCode] = React.useState("ex. E8H4");
+    const [roomCode, setRoomCode] = React.useState("");
     const [roomCodeErrorMessage, setRoomCodeErrorMessage] = React.useState("");
     React.useEffect(()=> {
         if (!roomCode || roomCode.length!=4){
@@ -75,8 +74,8 @@ export default function CreateNewRoomDialog(props: any) {
     }, [roomCode])
 
     React.useEffect(() => {
-        if (roomCode.length!=4 && playerNameErrorMessage) {
-            setPlayerNameErrorMessage("");
+        if (roomCode.length==4 && roomCodeErrorMessage) {
+            setRoomCodeErrorMessage("");
         }
     }, [roomCode, roomCodeErrorMessage]);
     const handleRoomCodeChange = (newValue: string) => {
@@ -87,6 +86,9 @@ export default function CreateNewRoomDialog(props: any) {
     const [joiningRoom, setJoiningRoom] = React.useState(false)
     
     const handleJoinRoom = () => {
+        if (playerNameErrorMessage || roomCodeErrorMessage)
+            return;
+
         console.log("joining room: " + roomCode);
         setJoiningRoom(!joiningRoom);
         
@@ -105,17 +107,17 @@ export default function CreateNewRoomDialog(props: any) {
             <DialogTitle>{"Join Game Room"}</DialogTitle>
             <DialogContent>
             <DialogContentText id="alert-dialog-slide-description">
-                Join a room that has been created.
+                Join a room that has been created already.
             </DialogContentText>
             
             <br />
             <FormControl fullWidth>
-                <TextField id="player-name" label="Your Name" defaultValue="Player 1" color="success" error={playerName.length>maxPlayerNameLength || playerName.length==0} helperText={playerNameErrorMessage} onChange={(e)=>handlePlayerNameChange(e.target.value)} />
+                <TextField id="player-name" label="Your Name" placeholder="Player 1" color="success" error={playerName.length>maxPlayerNameLength || playerName.length==0} helperText={playerNameErrorMessage} onChange={(e)=>handlePlayerNameChange(e.target.value)} />
             </FormControl>
             <br />
             <br />
             <FormControl fullWidth>
-                <TextField id="room-code" label="Room Code" defaultValue="ex. E8H4" color="success" error={roomCode.length!=4} helperText={roomCodeErrorMessage} onChange={(e)=>handleRoomCodeChange(e.target.value)} />
+                <TextField id="room-code" label="Room Code" placeholder="E8H4" color="success" error={roomCode.length!=4} helperText={roomCodeErrorMessage} inputProps={{ maxLength:4, style: {textTransform: "uppercase"}}} onChange={(e)=>handleRoomCodeChange(e.target.value)} />
             </FormControl>
             <br />
             <br />
@@ -123,8 +125,8 @@ export default function CreateNewRoomDialog(props: any) {
             
             </DialogContent>
             <DialogActions>
-                <Button variant="outlined" color="error" startIcon={<DoNotDisturbAltOutlinedIcon />} onClick={()=>props.handleDialogOpen()}>Cancel</Button>
-                <LoadingButton variant="outlined" color="success" startIcon={<HomeOutlinedIcon />} onClick={handleCreateNewGame} loading={creatingNewGame}>Join Room!</LoadingButton>
+                <Button variant="outlined" color="neutral" startIcon={<DoNotDisturbAltOutlinedIcon />} onClick={()=>props.handleDialogOpen()}>Cancel</Button>
+                <LoadingButton variant="outlined" color="success" startIcon={<HomeOutlinedIcon />} onClick={handleJoinRoom} loading={joiningRoom}>Join Room!</LoadingButton>
             </DialogActions>
         </Dialog>
         </div>

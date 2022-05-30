@@ -8,6 +8,7 @@ import './App.css';
 
 import HomePage from './pages/HomePage/HomePage';
 import AboutPage from './pages/AboutPage/AboutPage';
+import GameRoomPage from './pages/GameRoomPage/GameRoomPage';
 
 class App extends React.Component {
   render() {
@@ -16,6 +17,7 @@ class App extends React.Component {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/room" element={<GameRoomPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>    
       </BrowserRouter>

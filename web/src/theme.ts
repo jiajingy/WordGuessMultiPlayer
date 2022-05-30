@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { createTheme } from '@mui/material/styles';
 import { red } from '@mui/material/colors';
 
@@ -13,6 +14,10 @@ const theme = createTheme({
     error: {
       main: red.A400,
     },
+    neutral: {
+      main: red[300]
+    }
+    
   },
 
   typography:{
@@ -23,3 +28,22 @@ const theme = createTheme({
 });
 
 export default theme;
+
+
+declare module '@mui/material/styles' {
+ 
+  interface Palette {
+    neutral: Palette['primary'];
+  }
+  interface PaletteOptions {
+    neutral: PaletteOptions['primary'];
+  }
+
+}
+
+
+declare module '@mui/material/Button' {
+  interface ButtonPropsColorOverrides {
+    neutral: true;
+  }
+}

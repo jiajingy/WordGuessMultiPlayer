@@ -8,6 +8,7 @@ import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import EmojiPeopleRoundedIcon from '@mui/icons-material/EmojiPeopleRounded';
 
 import CreateNewRoomDialog from "../CreateNewRoomDialog/CreateNewRoomDialog";
+import JoinRoomDialog from "../JoinRoomDialog/JoinRoomDialog";
 
 
 const MainGamePanel = () => {
@@ -39,7 +40,7 @@ const MainGamePanel = () => {
                         <Button variant="contained" startIcon={<HomeOutlinedIcon />} color="success" sx={{fontWeight: "bold"}} onClick={()=>handleCreateNewRoomDialog()}>
                             Create New Game Room
                         </Button>
-                        <Button variant="contained" startIcon={<EmojiPeopleRoundedIcon />} color="primary" sx={{fontWeight: "bold"}}>
+                        <Button variant="contained" startIcon={<EmojiPeopleRoundedIcon />} color="primary" sx={{fontWeight: "bold"}} onClick={()=>handleJoinRoomDialog()}>
                             Join Room
                         </Button>
                 </Stack>
@@ -47,6 +48,8 @@ const MainGamePanel = () => {
           </Paper>
 
           <CreateNewRoomDialog handleDialogOpen={()=>handleCreateNewRoomDialog()} dialogOpen={createNewRoomDialogIsOpen} />
+
+          <JoinRoomDialog handleDialogOpen={()=>handleJoinRoomDialog()} dialogOpen={joinRoomDialogIsOpen} />
       </Grid>
     
     );

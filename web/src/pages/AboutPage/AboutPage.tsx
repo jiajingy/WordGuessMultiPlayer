@@ -39,7 +39,7 @@ class AboutPage extends React.Component {
                                         Xinwei (jiajingy)
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        I like building apps/games in all types. You can visit my github or provide any feedback to my product!
+                                        I like building apps/games in all types. You can visit my github or email me for any inquiry/feedback!
                                     </Typography>
                                     </CardContent>
                                 </CardActionArea>
