@@ -1,0 +1,6 @@
+{
+    "watch":["game_server"],
+    "ext":"ts,json",
+    "ignore":["game_server/**/*.spec.ts", "game_server/node_modules/*"],
+    "exec": "ts-node ./server"
+}

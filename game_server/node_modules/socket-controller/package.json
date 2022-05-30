@@ -1,0 +1,34 @@
+{
+  "name": "socket-controller",
+  "version": "1.0.0",
+  "description": "Simple library which uses a class based system for RPC over the socket.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "basic-emitter": "^1.0.1",
+    "jest": "^23.4.1",
+    "jsdoc": "^3.5.5"
+  },
+  "scripts": {
+    "compile": "./node_modules/.bin/babel src --out-dir lib",
+    "documentation": "./node_modules/.bin/jsdoc src",
+    "prepublish": "npm test && npm run compile",
+    "test": "./node_modules/.bin/jest src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ewall198/socket-controller.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ewall198/socket-controller/issues"
+  },
+  "homepage": "https://github.com/Ewall198/socket-controller#readme"
+}
