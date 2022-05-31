@@ -8,24 +8,14 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Slide from '@mui/material/Slide';
 import { TransitionProps } from '@mui/material/transitions';
 import { TextField } from '@mui/material';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import Slider from '@mui/material/Slider';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import MuiInput from '@mui/material/Input';
-import { styled } from '@mui/material/styles';
-import AbcRoundedIcon from '@mui/icons-material/AbcRounded';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
 import LoadingButton from '@mui/lab/LoadingButton';
 import DoNotDisturbAltOutlinedIcon from '@mui/icons-material/DoNotDisturbAltOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
-import { red } from '@mui/material/colors';
-import { textTransform } from '@mui/system';
+import gameContext from '../../gameContext';
+import socketService from '../../services/socketService';
+import gameService from '../../services/gameService';
+
 
 
 const Transition = React.forwardRef(function Transition(
@@ -82,17 +72,34 @@ export default function CreateNewRoomDialog(props: any) {
         setRoomCode(newValue);
     }
 
-    
+    const { setInRoom, isInRoom } = React.useContext(gameContext); 
     const [joiningRoom, setJoiningRoom] = React.useState(false)
     
-    const handleJoinRoom = () => {
+    const handleJoinRoom = async () => {
         if (playerNameErrorMessage || roomCodeErrorMessage)
             return;
 
-        console.log("joining room: " + roomCode);
-        setJoiningRoom(!joiningRoom);
+        const socket = socketService.socket;
+        if (!socket)
+            return;
+
+        console.log("joining room: " + roomCode);        
+        setJoiningRoom(true);
+
+        const joined = await gameService.joinGameRoom(socket, roomCode, playerName).catch((err)=>{
+            alert(err);
+        });
+
+        if(joined)
+            setInRoom(!isInRoom);
+
+        console.log(joined);
+
+        setJoiningRoom(false);
         
     }
+
+    
    
 
     return (

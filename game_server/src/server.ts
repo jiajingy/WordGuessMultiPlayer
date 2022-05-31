@@ -87,6 +87,7 @@
    var addr = server.address();
    var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
    debug("Listening on " + bind);
+   console.log(bind);
  
    console.log("Server Running on Port: ", port);
  }

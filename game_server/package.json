@@ -1,6 +1,6 @@
 {
-  "name": "web",
-  "version": "0.0.0",
+  "name": "game_sever",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "start": "nodemon"

@@ -35,10 +35,10 @@ const MainGamePanel = () => {
               <Typography variant="body2" color="text.secondary" align="center">
                     Report bug or provide feedback to {process.env.REACT_APP_DEV_CONTACT}
               </Typography>
-              <Box sx={{pt:5,pb:5}}>
+              <Box sx={{pt:5,pb:5,ml:2,mr:2}}>
                 <Stack direction="row" spacing={2} alignItems="center" justifyContent="center">
                         <Button variant="contained" startIcon={<HomeOutlinedIcon />} color="success" sx={{fontWeight: "bold"}} onClick={()=>handleCreateNewRoomDialog()}>
-                            Create New Game Room
+                            Create New Room
                         </Button>
                         <Button variant="contained" startIcon={<EmojiPeopleRoundedIcon />} color="primary" sx={{fontWeight: "bold"}} onClick={()=>handleJoinRoomDialog()}>
                             Join Room

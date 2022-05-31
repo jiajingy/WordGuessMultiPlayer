@@ -16,14 +16,14 @@ import Switch from '@mui/material/Switch';
 import LoadingButton from '@mui/lab/LoadingButton';
 import DoNotDisturbAltOutlinedIcon from '@mui/icons-material/DoNotDisturbAltOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
-import Stack from '@mui/material/Stack';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
-import PasswordIcon from '@mui/icons-material/Password';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import BuildIcon from '@mui/icons-material/Build';
+import FingerprintIcon from '@mui/icons-material/Fingerprint';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+
 
 const Android12Switch = styled(Switch)(({ theme }) => ({
     padding: 8,
@@ -66,7 +66,25 @@ const minWordLength = (process.env.REACT_APP_WORD_LENGTH_MIN) ? parseInt(process
 const maxWordLength = (process.env.REACT_APP_WORD_LENGTH_MAX) ? parseInt(process.env.REACT_APP_WORD_LENGTH_MAX) : 7;
 
 
+
 export default function RoomGameSettings(props: any) {
+    const navigate = useNavigate();
+
+    let isPageRdyToShow = false;
+
+    const { state } = useLocation() as any;
+    console.log(state);
+    
+    isPageRdyToShow = (state===null) ? false : true;
+
+    // Redirect to home page if no room ID
+    // This means user accesses this url directly
+    React.useEffect(() => {
+        if(!isPageRdyToShow){
+            navigate("/home");
+        }
+    }, []);
+        
 
     // Default to Medium difficulty
     const [difficulty, setDifficulty] = React.useState("2");
@@ -99,6 +117,9 @@ export default function RoomGameSettings(props: any) {
         setMixWord(!mixWord);
     }
 
+    const [canStartGame, setCanStartGame] = React.useState(true);
+
+
 
     const [creatingNewGame, setCreatingNewGame] = React.useState(false)
     
@@ -114,7 +135,7 @@ export default function RoomGameSettings(props: any) {
     return (
         <Container>
             <br />
-            <Typography component="h2" variant="h5" >Room <Chip label="ROOMCODE" color="success" size="small" icon={<HomeOutlinedIcon />} variant="outlined" /></Typography>
+            <Typography component="h2" variant="h5" >Room <Chip label={isPageRdyToShow?state.roomCode:"(no available room)"} color="success" size="small" icon={<HomeOutlinedIcon />} variant="outlined" /></Typography>
             <br />
             <Divider>Settings</Divider>
             <br />
@@ -193,7 +214,7 @@ export default function RoomGameSettings(props: any) {
             <br />
                 
             <Box display="flex" justifyContent="flex-end" alignItems="flex-end">
-                <LoadingButton variant="contained" color="success" startIcon={<PasswordIcon />} onClick={handleCreateNewGame} loading={creatingNewGame}>Start Game!</LoadingButton>
+                <LoadingButton variant="contained" color="success" startIcon={<FingerprintIcon />} disabled={!canStartGame} onClick={handleCreateNewGame} loading={creatingNewGame}>Start Game!</LoadingButton>
             </Box>
             <br />
         </Container>

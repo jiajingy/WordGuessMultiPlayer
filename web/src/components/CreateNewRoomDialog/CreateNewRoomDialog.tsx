@@ -12,6 +12,11 @@ import FormControl from '@mui/material/FormControl';
 import LoadingButton from '@mui/lab/LoadingButton';
 import DoNotDisturbAltOutlinedIcon from '@mui/icons-material/DoNotDisturbAltOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
+import { useNavigate } from 'react-router-dom';
+
+import gameService from '../../services/gameService';
+import socketService from '../../services/socketService';
+
 
 
 const Transition = React.forwardRef(function Transition(
@@ -26,7 +31,11 @@ const Transition = React.forwardRef(function Transition(
 
 const maxPlayerNameLength = (process.env.REACT_APP_PLAYER_NAME_LENGTH_MAX) ? parseInt(process.env.REACT_APP_PLAYER_NAME_LENGTH_MAX) : 20;
 
+
 export default function CreateNewRoomDialog(props: any) {
+
+    const navigate = useNavigate();
+    const goToGameRoomPage = (roomCode: any, playerList: any) => navigate("/room", {state:{roomCode:roomCode, playerList:playerList}});
 
     const [playerName, setPlayerName] = React.useState("");
     const [playerNameErrorMessage, setPlayerNameErrorMessage] = React.useState("");
@@ -52,11 +61,39 @@ export default function CreateNewRoomDialog(props: any) {
 
     const [creatingNewRoom, setCreatingNewRoom] = React.useState(false)
     
-    const handleCreateNewRoom = () => {
+    const handleCreateNewRoom = async () => {
         if (playerNameErrorMessage)
             return;
+        
+
+        const socket = socketService.socket;
+        if (!socket)
+            return;
+
         console.log("creating new room...");
-        setCreatingNewRoom(!creatingNewRoom);
+            setCreatingNewRoom(true);
+            
+        const createGameRoomResult = await gameService.CreateGameRoom(socket, playerName).catch((err)=>{
+            alert(err);
+        });
+
+        if(createGameRoomResult){
+            setCreatingNewRoom(false);
+            console.log(createGameRoomResult.roomCode);
+            
+            goToGameRoomPage(
+                createGameRoomResult.roomCode,
+                [{
+                    playerName: playerName,
+                    role: 1,
+
+                }]
+            );        
+        }
+
+            
+        
+
     }
    
 
@@ -84,7 +121,7 @@ export default function CreateNewRoomDialog(props: any) {
                     
                     <DialogActions>
                         <Button variant="outlined" color="neutral" startIcon={<DoNotDisturbAltOutlinedIcon />} onClick={()=>props.handleDialogOpen()}>Cancel</Button>
-                        <LoadingButton variant="outlined" color="success" startIcon={<HomeOutlinedIcon />} onClick={handleCreateNewRoom} loading={creatingNewRoom}>Start New Room!</LoadingButton>
+                        <LoadingButton variant="outlined" color="success" startIcon={<HomeOutlinedIcon />} onClick={handleCreateNewRoom} loading={creatingNewRoom}>Create Room!</LoadingButton>
                     </DialogActions>
                 </DialogContent>
             </Dialog>
