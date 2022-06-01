@@ -17,12 +17,12 @@ export default function GameRoomPage(props: any){
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={8} lg={8}>
                         <Paper elevation={4}>
-                            <RoomPlayerSection roomCode={props.roomCode} playerList={props.playerList}/>
+                            <RoomPlayerSection roomCode={props.roomCode} internalRoomId={props.internalRoomId} playerList={props.playerList}/>
                         </Paper>
                     </Grid>
                     <Grid item xs={12} md={4} lg={4}>
                         <Paper elevation={4}>
-                            <RoomGameSettings roomCode={props.roomCode} playerList={props.playerList}/>
+                            <RoomGameSettings roomCode={props.roomCode} internalRoomId={props.internalRoomId} playerList={props.playerList}/>
                         </Paper>
                     </Grid>
                 </Grid>

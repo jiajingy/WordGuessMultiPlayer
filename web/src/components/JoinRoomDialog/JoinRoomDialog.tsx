@@ -15,6 +15,8 @@ import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import gameContext from '../../gameContext';
 import socketService from '../../services/socketService';
 import gameService from '../../services/gameService';
+import { useNavigate } from 'react-router-dom';
+import publicIp from 'public-ip';
 
 
 
@@ -31,6 +33,9 @@ const Transition = React.forwardRef(function Transition(
 const maxPlayerNameLength = (process.env.REACT_APP_PLAYER_NAME_LENGTH_MAX) ? parseInt(process.env.REACT_APP_PLAYER_NAME_LENGTH_MAX) : 20;
 
 export default function CreateNewRoomDialog(props: any) {
+
+    const navigate = useNavigate();
+    const goToGameRoomPage = (roomCode: any, internalRoomId: any, playerList: any) => navigate("/room", {state:{roomCode:roomCode, internalRoomId: internalRoomId, playerList:playerList}});
 
     const [playerName, setPlayerName] = React.useState("");
     const [playerNameErrorMessage, setPlayerNameErrorMessage] = React.useState("");
@@ -83,19 +88,27 @@ export default function CreateNewRoomDialog(props: any) {
         if (!socket)
             return;
 
-        console.log("joining room: " + roomCode);        
+        console.log("joining room: " + roomCode);       
         setJoiningRoom(true);
 
-        const joined = await gameService.joinGameRoom(socket, roomCode, playerName).catch((err)=>{
+        let ipAddr = await publicIp.v4();
+
+        const joinedRoomResult = await gameService.joinGameRoom(socket, roomCode, playerName, ipAddr).catch((err)=>{
             alert(err);
         });
 
-        if(joined)
+        if(joinedRoomResult)
             setInRoom(!isInRoom);
 
-        console.log(joined);
+        console.log(joinedRoomResult);
 
         setJoiningRoom(false);
+
+        goToGameRoomPage(
+            joinedRoomResult.roomCode,
+            joinedRoomResult.interalRoomId,
+            joinedRoomResult.playerList
+        );
         
     }
 

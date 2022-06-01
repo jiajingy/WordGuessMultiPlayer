@@ -21,8 +21,27 @@ export class RoomHelper {
 
         // Before join a new game room, make sure user leaves previous joined room if any
         for(let room in socketRooms){
-            await socket.leave(room);
+            console.log("levavubg room: ", room);
+            //await socket.leave(room);
         }
 
+    }
+
+    public async leaveAllRoomsArray(@SocketIO() io: Server, @ConnectedSocket() socket: Socket, roomList:{}, ipAddr: string){
+        for (const roomCode in roomList){
+            if (ipAddr in roomList[roomCode]["playerList"])
+                delete roomList[roomCode]["playerList"][ipAddr];
+        }
+
+        return roomList;
+    }
+
+    public async getInRoomInternalId(@SocketIO() io: Server, @ConnectedSocket() socket: Socket){
+        const socketRooms = Array.from(socket.rooms.values()).filter((r)=> r!== socket.id);
+
+        if(socketRooms.length>0)
+            return socketRooms[0];
+
+        return -1;
     }
 }

@@ -1,6 +1,5 @@
 import { ConnectedSocket, MessageBody, OnMessage, SocketController, SocketIO } from "socket-controllers";
 import { Server, Socket } from "socket.io";
-
 import { RoomHelper } from "../helpers/roomHelper";
 
 @SocketController()
@@ -13,22 +12,17 @@ export class RoomController {
     @OnMessage("create_game")
     public async CreateGame(@SocketIO() io: Server, @ConnectedSocket() socket: Socket, @MessageBody() message: any){
         try{
+            
             // Leave all rooms before creating a new one
-            await this.roomHelper.leaveAllRooms(io, socket)
+            await this.roomHelper.leaveAllRooms(io, socket);
+            this.roomList = await this.roomHelper.leaveAllRoomsArray(io, socket, this.roomList, message.ipAddr);
             console.log("creating room...");
 
             // Generate an unique room code
             let newRoomCode = this.roomHelper.generateRoomCode(this.roomCodeLength);
             while (newRoomCode in this.roomList)
                 newRoomCode = this.roomHelper.generateRoomCode(this.roomCodeLength);
-            console.log("get new room code: ", newRoomCode);
-
-            // Update roomList with new room code and playerList
-            let playerList = [];
-            playerList.push(message.playerInfo);
-            this.roomList[newRoomCode] = {
-                playerList: playerList
-            }
+            console.log("got new room code: ", newRoomCode);
 
             console.log("joining new room...");
 
@@ -36,13 +30,24 @@ export class RoomController {
             socket.join(newRoomCode);
             console.log("joined room... sent back info");
 
+            // Update roomList with new room code and playerList
+            let playerList = [];
+            playerList.push({
+                [message.ipAddr]: message.playerInfo,
+            });
+            let internalRoomNo = this.roomHelper.getInRoomInternalId(io, socket);
+            this.roomList[newRoomCode] = {
+                internalRoomNo: internalRoomNo,
+                playerList: playerList
+            }
+
             // Send back to client
-            socket.emit("game_created", {roomCode:newRoomCode});
+            socket.emit("game_created", {roomCode:newRoomCode, internalRoomNo:internalRoomNo,  playerList:playerList});
 
             console.log("# of rooms: ", Object.keys(this.roomList).length);
             console.log(this.roomList[newRoomCode].playerList);
         }catch(e){
-            socket.emit("game_create_error",e);
+            socket.emit("game_create_error", e);
         }
         
         
@@ -54,6 +59,7 @@ export class RoomController {
 
         // Leave all rooms before creating a new one
         await this.roomHelper.leaveAllRooms(io, socket)
+        this.roomList = await this.roomHelper.leaveAllRoomsArray(io, socket, this.roomList, message.ipAddr);
 
         const connectedSockets = io.sockets.adapter.rooms.get(message.roomCode);
 
@@ -68,10 +74,14 @@ export class RoomController {
         }else{
             await socket.join(message.roomCode);
             // Update roomList with new playerList
-            this.roomList[message.roomCode].playerList.push(message.playerInfo);
+            this.roomList[message.roomCode].playerList.push({
+                [message.ipAddr]:message.playerInfo
+            });
 
             // Send info back
             socket.emit("room_joined", {
+                roomCode: message.roomCode,
+                internalRoomNo: this.roomList[message.roomCode].internalRoomNo,
                 playerList: this.roomList[message.roomCode].playerList
             });
         }

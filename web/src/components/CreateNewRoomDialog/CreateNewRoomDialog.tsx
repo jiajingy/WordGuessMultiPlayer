@@ -13,6 +13,8 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import DoNotDisturbAltOutlinedIcon from '@mui/icons-material/DoNotDisturbAltOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import { useNavigate } from 'react-router-dom';
+import publicIp from 'public-ip';
+
 
 import gameService from '../../services/gameService';
 import socketService from '../../services/socketService';
@@ -28,14 +30,12 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="down" ref={ref} {...props} />;
 });
 
-
 const maxPlayerNameLength = (process.env.REACT_APP_PLAYER_NAME_LENGTH_MAX) ? parseInt(process.env.REACT_APP_PLAYER_NAME_LENGTH_MAX) : 20;
-
 
 export default function CreateNewRoomDialog(props: any) {
 
     const navigate = useNavigate();
-    const goToGameRoomPage = (roomCode: any, playerList: any) => navigate("/room", {state:{roomCode:roomCode, playerList:playerList}});
+    const goToGameRoomPage = (roomCode: any, internalRoomId: any, playerList: any) => navigate("/room", {state:{roomCode:roomCode, internalRoomId: internalRoomId, playerList:playerList}});
 
     const [playerName, setPlayerName] = React.useState("");
     const [playerNameErrorMessage, setPlayerNameErrorMessage] = React.useState("");
@@ -70,10 +70,14 @@ export default function CreateNewRoomDialog(props: any) {
         if (!socket)
             return;
 
+        console.log(socket.id);
+
         console.log("creating new room...");
             setCreatingNewRoom(true);
+
+        let ipAddr = await publicIp.v4();
             
-        const createGameRoomResult = await gameService.CreateGameRoom(socket, playerName).catch((err)=>{
+        const createGameRoomResult = await gameService.CreateGameRoom(socket, playerName, ipAddr).catch((err)=>{
             alert(err);
         });
 
@@ -83,16 +87,10 @@ export default function CreateNewRoomDialog(props: any) {
             
             goToGameRoomPage(
                 createGameRoomResult.roomCode,
-                [{
-                    playerName: playerName,
-                    role: 1,
-
-                }]
+                createGameRoomResult.internalRoomId,
+                createGameRoomResult.playerList
             );        
         }
-
-            
-        
 
     }
    

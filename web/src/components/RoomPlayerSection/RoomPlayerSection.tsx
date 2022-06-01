@@ -35,10 +35,19 @@ import socketService from '../../services/socketService';
 
 
 export default function RoomPlayerSection(props: any) {
+    
+
     const navigate = useNavigate();
     const { state } = useLocation() as any;
     let isPageRdyToShow = false;
     isPageRdyToShow = (state===null) ? false : true;
+
+    console.log(state);
+
+    const [playerList, setPlayerList] = React.useState(state);
+    const handleChangePlayerList = (newPlayerList: any) => {
+        setPlayerList(newPlayerList);
+    }
 
     const handleGameRoomUpdate = () => {
         if (socketService.socket){
@@ -55,15 +64,14 @@ export default function RoomPlayerSection(props: any) {
             navigate("/home");
         }
 
+        handleChangePlayerList(state.playerList);
         handleGameRoomUpdate();
+
     }, []);
 
-    const [playerList, setPlayerList] = React.useState([]);
-    const handleChangePlayerList = (newPlayerList: any) => {
-        setPlayerList(newPlayerList);
-    }
     
-    console.log(playerList);
+    
+    
 
     return (
         <Container>
