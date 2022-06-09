@@ -3,17 +3,6 @@ import { IGameRoom } from "./gameInterfaces";
 
 class GameService {
 
-    public async joinGameRoom(socket: Socket, roomCode: string, playerName: string, ipAddr: string): Promise<any>{
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                socket.emit("join_room", { roomCode:roomCode.toUpperCase(), playerInfo:{playerName: playerName, role:2}, idAddr: ipAddr });
-                socket.on("room_joined", (res)=>resolve(res));
-                socket.on("room_join_error", ({err})=> reject(err));
-            }, 5*1000);
-            
-        });
-    }
-
 
     public async CreateGameRoom(socket:Socket, playerName: string, ipAddr: string): Promise<any>{
         return new Promise((resolve, reject) => {
@@ -24,6 +13,18 @@ class GameService {
             }, 5*1000);  
         });
     }
+
+    public async joinGameRoom(socket: Socket, roomCode: string, playerName: string, ipAddr: string): Promise<any>{
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                socket.emit("join_room", { roomCode:roomCode.toUpperCase(), playerInfo:{playerName: playerName, role:2}, ipAddr: ipAddr });
+                socket.on("room_joined", (res)=>resolve(res));
+                socket.on("room_join_error", ({err})=> reject(err));
+            }, 5*1000);
+            
+        });
+    }
+    
 
     public async onGameRoomUpdate(
         socket:Socket, 

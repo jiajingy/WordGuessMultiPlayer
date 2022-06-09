@@ -15,6 +15,7 @@ export class RoomController {
             
             // Leave all rooms before creating a new one
             await this.roomHelper.leaveAllRooms(io, socket);
+            console.log("left socket room");
             this.roomList = await this.roomHelper.leaveAllRoomsArray(io, socket, this.roomList, message.ipAddr);
             console.log("creating room...");
 
@@ -36,16 +37,17 @@ export class RoomController {
                 [message.ipAddr]: message.playerInfo,
             });
             let internalRoomNo = this.roomHelper.getInRoomInternalId(io, socket);
+
             this.roomList[newRoomCode] = {
-                internalRoomNo: internalRoomNo,
-                playerList: playerList
+                "internalRoomNo": newRoomCode,
+                "playerList": playerList
             }
 
             // Send back to client
-            socket.emit("game_created", {roomCode:newRoomCode, internalRoomNo:internalRoomNo,  playerList:playerList});
+            socket.emit("game_created", {roomCode:newRoomCode, internalRoomNo:newRoomCode,  playerList:playerList});
 
             console.log("# of rooms: ", Object.keys(this.roomList).length);
-            console.log(this.roomList[newRoomCode].playerList);
+            console.log(this.roomHelper.printRoomPlayerDetail(this.roomList));
         }catch(e){
             socket.emit("game_create_error", e);
         }
@@ -65,7 +67,8 @@ export class RoomController {
 
 
         console.log(connectedSockets);
-
+        console.log(connectedSockets.size);
+        console.log(this.roomList[message.roomCode]);
 
         if (connectedSockets && connectedSockets.size === 20){
             socket.emit("join_room_error", {
@@ -73,19 +76,22 @@ export class RoomController {
             });
         }else{
             await socket.join(message.roomCode);
+
+
             // Update roomList with new playerList
-            this.roomList[message.roomCode].playerList.push({
+            this.roomList[message.roomCode]["playerList"].push({
                 [message.ipAddr]:message.playerInfo
             });
-
+  
             // Send info back
             socket.emit("room_joined", {
                 roomCode: message.roomCode,
-                internalRoomNo: this.roomList[message.roomCode].internalRoomNo,
-                playerList: this.roomList[message.roomCode].playerList
+                internalRoomNo: message.roomCode,
+                playerList: this.roomList[message.roomCode]["playerList"]
             });
+            
         }
 
-        console.log(this.roomList);
+        console.log(this.roomHelper.printRoomPlayerDetail(this.roomList));
     }
 }

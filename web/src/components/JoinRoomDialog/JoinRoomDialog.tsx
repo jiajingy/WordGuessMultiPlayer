@@ -17,6 +17,8 @@ import socketService from '../../services/socketService';
 import gameService from '../../services/gameService';
 import { useNavigate } from 'react-router-dom';
 import publicIp from 'public-ip';
+import { internalIpV4 } from 'internal-ip';
+
 
 
 
@@ -32,10 +34,10 @@ const Transition = React.forwardRef(function Transition(
 
 const maxPlayerNameLength = (process.env.REACT_APP_PLAYER_NAME_LENGTH_MAX) ? parseInt(process.env.REACT_APP_PLAYER_NAME_LENGTH_MAX) : 20;
 
-export default function CreateNewRoomDialog(props: any) {
+export default function JoinRoomDialog(props: any) {
 
     const navigate = useNavigate();
-    const goToGameRoomPage = (roomCode: any, internalRoomId: any, playerList: any) => navigate("/room", {state:{roomCode:roomCode, internalRoomId: internalRoomId, playerList:playerList}});
+    const goToGameRoomPage = (roomCode: any, internalRoomId: any, playerList: any) => navigate("/" + roomCode, {state:{roomCode:roomCode, internalRoomId: internalRoomId, playerList:playerList}});
 
     const [playerName, setPlayerName] = React.useState("");
     const [playerNameErrorMessage, setPlayerNameErrorMessage] = React.useState("");
@@ -91,7 +93,9 @@ export default function CreateNewRoomDialog(props: any) {
         console.log("joining room: " + roomCode);       
         setJoiningRoom(true);
 
-        let ipAddr = await publicIp.v4();
+        const publicIpAddr = await publicIp.v4();
+        const internalIpAddr = await internalIpV4();
+        const ipAddr = publicIpAddr + "-" + internalIpAddr;
 
         const joinedRoomResult = await gameService.joinGameRoom(socket, roomCode, playerName, ipAddr).catch((err)=>{
             alert(err);

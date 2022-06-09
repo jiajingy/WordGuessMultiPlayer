@@ -44,8 +44,8 @@ export default function App () {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/room" element={<GameRoomPage />} />
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/:roomCode" element={<GameRoomPage />} />
+          
         </Routes>    
       </BrowserRouter>
     </GameContext.Provider>

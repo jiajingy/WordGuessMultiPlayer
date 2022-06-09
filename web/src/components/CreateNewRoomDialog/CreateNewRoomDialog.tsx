@@ -14,6 +14,7 @@ import DoNotDisturbAltOutlinedIcon from '@mui/icons-material/DoNotDisturbAltOutl
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import { useNavigate } from 'react-router-dom';
 import publicIp from 'public-ip';
+import { internalIpV4 } from 'internal-ip';
 
 
 import gameService from '../../services/gameService';
@@ -35,7 +36,7 @@ const maxPlayerNameLength = (process.env.REACT_APP_PLAYER_NAME_LENGTH_MAX) ? par
 export default function CreateNewRoomDialog(props: any) {
 
     const navigate = useNavigate();
-    const goToGameRoomPage = (roomCode: any, internalRoomId: any, playerList: any) => navigate("/room", {state:{roomCode:roomCode, internalRoomId: internalRoomId, playerList:playerList}});
+    const goToGameRoomPage = (roomCode: any, internalRoomId: any, playerList: any) => navigate("/" + roomCode, {state:{roomCode:roomCode, internalRoomId: internalRoomId, playerList:playerList}});
 
     const [playerName, setPlayerName] = React.useState("");
     const [playerNameErrorMessage, setPlayerNameErrorMessage] = React.useState("");
@@ -75,7 +76,9 @@ export default function CreateNewRoomDialog(props: any) {
         console.log("creating new room...");
             setCreatingNewRoom(true);
 
-        let ipAddr = await publicIp.v4();
+        const publicIpAddr = await publicIp.v4();
+        const internalIpAddr = await internalIpV4();
+        const ipAddr = publicIpAddr + "-" + internalIpAddr;
             
         const createGameRoomResult = await gameService.CreateGameRoom(socket, playerName, ipAddr).catch((err)=>{
             alert(err);

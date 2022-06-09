@@ -6,10 +6,12 @@ import homePageStyles from "../../pages/HomePage/HomePageStyles.module.scss";
 import NavBar from "../../components/NavBar/NavBar";
 import RoomGameSettings from "../../components/RoomGameSettings/RoomGameSettings";
 import RoomPlayerSection from "../../components/RoomPlayerSection/RoomPlayerSection";
+import { useParams } from "react-router-dom";
 
 
 
 export default function GameRoomPage(props: any){
+    const { roomCode } = useParams();
     return (
         <div className={sharedStyles.page}>
             <NavBar />
@@ -17,12 +19,12 @@ export default function GameRoomPage(props: any){
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={8} lg={8}>
                         <Paper elevation={4}>
-                            <RoomPlayerSection roomCode={props.roomCode} internalRoomId={props.internalRoomId} playerList={props.playerList}/>
+                            <RoomPlayerSection roomCode={roomCode} internalRoomId={props.internalRoomId} playerList={props.playerList}/>
                         </Paper>
                     </Grid>
                     <Grid item xs={12} md={4} lg={4}>
                         <Paper elevation={4}>
-                            <RoomGameSettings roomCode={props.roomCode} internalRoomId={props.internalRoomId} playerList={props.playerList}/>
+                            <RoomGameSettings roomCode={roomCode} internalRoomId={props.internalRoomId} playerList={props.playerList}/>
                         </Paper>
                     </Grid>
                 </Grid>
