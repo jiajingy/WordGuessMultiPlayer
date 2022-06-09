@@ -42,15 +42,10 @@ export class RoomHelper {
                     else{
                         // If still has player(s) in room
                         // Automatically promote first position player to game master
-                        console.log("ddd");
                         if (!this.isGameMasterInRoom(roomList, roomCode)){
                             this.printRoomPlayerDetail(roomList);
-                            console.log("eee");
                             const ip = Object.keys(roomList[roomCode]["playerList"][0])[0];
-                            console.log("fff");
-                            console.log(ip);
                             roomList[roomCode]["playerList"][idx][ip]["role"]=1;
-                            console.log("ggggg");
                         }
                             
                     }
@@ -59,7 +54,6 @@ export class RoomHelper {
                     
             }
         }
-        console.log("sdsdsdsdsd");
         return roomList;
     }
 
@@ -84,8 +78,6 @@ export class RoomHelper {
             }
 
         }
-
-        console.log("-----------------");
     }
 
     private isGameRoomHasPlayer(roomList:{}, roomCode:string){

@@ -97,7 +97,7 @@ export default function JoinRoomDialog(props: any) {
         const internalIpAddr = await internalIpV4();
         const ipAddr = publicIpAddr + "-" + internalIpAddr;
 
-        const joinedRoomResult = await gameService.joinGameRoom(socket, roomCode, playerName, ipAddr).catch((err)=>{
+        const joinedRoomResult = await gameService.JoinGameRoom(socket, roomCode, playerName, ipAddr).catch((err)=>{
             alert(err);
         });
 
