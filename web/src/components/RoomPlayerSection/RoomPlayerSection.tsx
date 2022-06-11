@@ -29,6 +29,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import StarsIcon from '@mui/icons-material/Stars';
 import { useLocation, useNavigate } from 'react-router-dom';
 import gameService from '../../services/gameService';
 import socketService from '../../services/socketService';
@@ -44,15 +45,15 @@ export default function RoomPlayerSection(props: any) {
 
     console.log(state);
 
-    const [playerList, setPlayerList] = React.useState(state);
+    const [playerList, setPlayerList] = React.useState(state.playerList);
     const handleChangePlayerList = (newPlayerList: any) => {
         setPlayerList(newPlayerList);
     }
 
     const handleGameRoomUpdate = () => {
         if (socketService.socket){
-            gameService.onGameRoomUpdate(socketService.socket, (newGameRoom) => {
-                
+            gameService.onGameRoomUpdate(socketService.socket, (newGameRoom:any) => {
+                handleChangePlayerList(newGameRoom.playerList);
             });
         }
     }
@@ -64,13 +65,11 @@ export default function RoomPlayerSection(props: any) {
             navigate("/home");
         }
 
-        handleChangePlayerList(state.playerList);
+        //handleChangePlayerList(state.playerList);
         handleGameRoomUpdate();
 
     }, []);
 
-    
-    
     
 
     return (
@@ -83,26 +82,23 @@ export default function RoomPlayerSection(props: any) {
                         Players
                     </Typography>
                     <List dense>
-                        
-                        <ListItem>
-                            <ListItemIcon>
-                                <AccountCircleIcon />
-                            </ListItemIcon>
-                            <ListItemText
-                                primary="Single-line item"
-                                secondary="secondray"
-                            />
-                        </ListItem>
-                        
-                        <ListItem>
-                            <ListItemIcon>
-                                <AccountCircleIcon />
-                            </ListItemIcon>
-                            <ListItemText
-                                primary="Single-line item"
-                                secondary="secondray"
-                            />
-                        </ListItem>
+                        {
+                            playerList.map((player:object)=>{                              
+                                const playerObj = Object.values(player)[0];
+                                const playerIp = Object.keys(player)[0];
+                                return <ListItem key={playerIp}>
+                                    <ListItemIcon>
+                                        {playerObj.role === 1 ? <StarsIcon /> : <AccountCircleIcon />}
+                                    </ListItemIcon>
+                                    <ListItemText
+                                        primary={playerObj.playerName}
+                                        secondary={playerObj.role === 1 ? "Game Master" : "Player"}
+                                    />
+                                </ListItem>
+                                
+                            })
+                        }
+
                     </List>
                 </Grid>
             </Grid>

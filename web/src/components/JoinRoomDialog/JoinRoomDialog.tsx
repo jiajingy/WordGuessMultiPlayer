@@ -18,6 +18,7 @@ import gameService from '../../services/gameService';
 import { useNavigate } from 'react-router-dom';
 import publicIp from 'public-ip';
 import { internalIpV4 } from 'internal-ip';
+import Alert from '@mui/material/Alert';
 
 
 
@@ -45,8 +46,17 @@ export default function JoinRoomDialog(props: any) {
         setPlayerName(newValue);
     }
 
+    const[showAlert, setShowAlert] = React.useState(false);
+    const handleSetShowAlert = (newValue:boolean)=>{
+        setShowAlert(newValue);
+    }
+    const[alertContent, setAlertContent] = React.useState("");
+    const handleSetAlertContent = (newValue:string)=>{
+        setAlertContent(newValue);
+    }
+
     React.useEffect(()=> {
-        if (!playerName || playerName.length==0){
+        if (!playerName || playerName.length===0){
             setPlayerNameErrorMessage("Player name cannot be empty");
         }
         else if (playerName.length > maxPlayerNameLength){
@@ -56,7 +66,7 @@ export default function JoinRoomDialog(props: any) {
     }, [playerName])
 
     React.useEffect(() => {
-        if (playerName.length!=0 && playerName.length <= maxPlayerNameLength && playerNameErrorMessage) {
+        if (playerName.length!==0 && playerName.length <= maxPlayerNameLength && playerNameErrorMessage) {
             setPlayerNameErrorMessage("");
         }
     }, [playerName, playerNameErrorMessage]);
@@ -65,13 +75,13 @@ export default function JoinRoomDialog(props: any) {
     const [roomCode, setRoomCode] = React.useState("");
     const [roomCodeErrorMessage, setRoomCodeErrorMessage] = React.useState("");
     React.useEffect(()=> {
-        if (!roomCode || roomCode.length!=4){
+        if (!roomCode || roomCode.length!==4){
             setRoomCodeErrorMessage("Room Code is 4 characters");
         }
     }, [roomCode])
 
     React.useEffect(() => {
-        if (roomCode.length==4 && roomCodeErrorMessage) {
+        if (roomCode.length===4 && roomCodeErrorMessage) {
             setRoomCodeErrorMessage("");
         }
     }, [roomCode, roomCodeErrorMessage]);
@@ -90,7 +100,8 @@ export default function JoinRoomDialog(props: any) {
         if (!socket)
             return;
 
-        console.log("joining room: " + roomCode);       
+        console.log("joining room: " + roomCode);
+        handleSetShowAlert(false);     
         setJoiningRoom(true);
 
         const publicIpAddr = await publicIp.v4();
@@ -98,11 +109,17 @@ export default function JoinRoomDialog(props: any) {
         const ipAddr = publicIpAddr + "-" + internalIpAddr;
 
         const joinedRoomResult = await gameService.JoinGameRoom(socket, roomCode, playerName, ipAddr).catch((err)=>{
-            alert(err);
+            handleSetAlertContent("Cannot join room, double check your room code.");
+            handleSetShowAlert(true);
+            setJoiningRoom(false);
+            
         });
+
 
         if(joinedRoomResult)
             setInRoom(!isInRoom);
+        else
+            return;
 
         console.log(joinedRoomResult);
 
@@ -130,23 +147,22 @@ export default function JoinRoomDialog(props: any) {
         >
             <DialogTitle>{"Join Game Room"}</DialogTitle>
             <DialogContent>
-            <DialogContentText id="alert-dialog-slide-description">
-                Join a room that has been created already.
-            </DialogContentText>
-            
-            <br />
-            <FormControl fullWidth>
-                <TextField id="player-name" label="Your Name" placeholder="Player 1" color="success" error={playerName.length>maxPlayerNameLength || playerName.length==0} helperText={playerNameErrorMessage} onChange={(e)=>handlePlayerNameChange(e.target.value)} />
-            </FormControl>
-            <br />
-            <br />
-            <FormControl fullWidth>
-                <TextField id="room-code" label="Room Code" placeholder="E8H4" color="success" error={roomCode.length!=4} helperText={roomCodeErrorMessage} inputProps={{ maxLength:4, style: {textTransform: "uppercase"}}} onChange={(e)=>handleRoomCodeChange(e.target.value)} />
-            </FormControl>
-            <br />
-            <br />
-            
-            
+                {showAlert ? <Alert severity="error">{alertContent}</Alert> : <></> }
+                <DialogContentText id="alert-dialog-slide-description">
+                    Join a room that has been created already.
+                </DialogContentText>
+                
+                <br />
+                <FormControl fullWidth>
+                    <TextField id="player-name" label="Your Name" placeholder="Player 1" color="success" error={playerName.length>maxPlayerNameLength || playerName.length===0} helperText={playerNameErrorMessage} onChange={(e)=>handlePlayerNameChange(e.target.value)} />
+                </FormControl>
+                <br />
+                <br />
+                <FormControl fullWidth>
+                    <TextField id="room-code" label="Room Code" placeholder="E8H4" color="success" error={roomCode.length!==4} helperText={roomCodeErrorMessage} inputProps={{ maxLength:4, style: {textTransform: "uppercase"}}} onChange={(e)=>handleRoomCodeChange(e.target.value)} />
+                </FormControl>
+                <br />
+                <br />
             </DialogContent>
             <DialogActions>
                 <Button variant="outlined" color="neutral" startIcon={<DoNotDisturbAltOutlinedIcon />} onClick={()=>props.handleDialogOpen()}>Cancel</Button>

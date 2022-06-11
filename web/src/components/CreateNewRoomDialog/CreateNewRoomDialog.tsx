@@ -15,6 +15,7 @@ import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import { useNavigate } from 'react-router-dom';
 import publicIp from 'public-ip';
 import { internalIpV4 } from 'internal-ip';
+import Alert from '@mui/material/Alert';
 
 
 import gameService from '../../services/gameService';
@@ -44,8 +45,17 @@ export default function CreateNewRoomDialog(props: any) {
         setPlayerName(newValue);
     }
 
+    const[showAlert, setShowAlert] = React.useState(false);
+    const handleSetShowAlert = (newValue:boolean)=>{
+        setShowAlert(newValue);
+    }
+    const[alertContent, setAlertContent] = React.useState("");
+    const handleSetAlertContent = (newValue:string)=>{
+        setAlertContent(newValue);
+    }
+
     React.useEffect(()=> {
-        if (!playerName || playerName.length==0){
+        if (!playerName || playerName.length===0){
             setPlayerNameErrorMessage("Player name cannot be empty");
         }
         else if (playerName.length > maxPlayerNameLength){
@@ -55,7 +65,7 @@ export default function CreateNewRoomDialog(props: any) {
     }, [playerName])
 
     React.useEffect(() => {
-        if (playerName.length!=0 && playerName.length <= maxPlayerNameLength && playerNameErrorMessage) {
+        if (playerName.length!==0 && playerName.length <= maxPlayerNameLength && playerNameErrorMessage) {
             setPlayerNameErrorMessage("");
         }
     }, [playerName, playerNameErrorMessage]);
@@ -74,14 +84,18 @@ export default function CreateNewRoomDialog(props: any) {
         console.log(socket.id);
 
         console.log("creating new room...");
-            setCreatingNewRoom(true);
+        setCreatingNewRoom(true);
+        handleSetShowAlert(false);
 
         const publicIpAddr = await publicIp.v4();
         const internalIpAddr = await internalIpV4();
         const ipAddr = publicIpAddr + "-" + internalIpAddr;
             
         const createGameRoomResult = await gameService.CreateGameRoom(socket, playerName, ipAddr).catch((err)=>{
-            alert(err);
+            handleSetAlertContent("Cannot create room, something wrong with game server.");
+            handleSetShowAlert(true);
+            setCreatingNewRoom(false);
+            return;
         });
 
         if(createGameRoomResult){
@@ -100,6 +114,7 @@ export default function CreateNewRoomDialog(props: any) {
 
     return (
         <div>
+            
             <Dialog
                 open={props.dialogOpen}
                 TransitionComponent={Transition}
@@ -109,13 +124,14 @@ export default function CreateNewRoomDialog(props: any) {
             >
                 <DialogTitle>{"Create New Game Room"}</DialogTitle>
                 <DialogContent>
+                    {showAlert ? <Alert severity="error">{alertContent}</Alert> : <></> }
                     <DialogContentText id="alert-dialog-slide-description">
                         After create room we will display a Room Code for you to share with your friends.
                     </DialogContentText>
                     
                     <br />
                     <FormControl fullWidth>
-                        <TextField id="player-name" label="Your Name" placeholder="Player 1" color="success" error={playerName.length>maxPlayerNameLength || playerName.length==0} helperText={playerNameErrorMessage} onChange={(e)=>handlePlayerNameChange(e.target.value)} />
+                        <TextField id="player-name" label="Your Name" placeholder="Player 1" color="success" error={playerName.length>maxPlayerNameLength || playerName.length===0} helperText={playerNameErrorMessage} onChange={(e)=>handlePlayerNameChange(e.target.value)} />
                     </FormControl>
                     <br />
                     <br />

@@ -1,4 +1,4 @@
-import { ConnectedSocket, MessageBody, OnMessage, SocketController, SocketIO } from "socket-controllers";
+import { ConnectedSocket, MessageBody, OnMessage, SocketController, SocketIO, SocketRequest } from "socket-controllers";
 import { Server, Socket } from "socket.io";
 import { RoomHelper } from "../helpers/roomHelper";
 
@@ -12,11 +12,12 @@ export class RoomController {
     @OnMessage("create_game")
     public async CreateGame(@SocketIO() io: Server, @ConnectedSocket() socket: Socket, @MessageBody() message: any){
         try{
-            
             // Leave all rooms before creating a new one
             await this.roomHelper.leaveAllRooms(io, socket);
             console.log("left socket room");
             this.roomList = await this.roomHelper.leaveAllRoomsArray(io, socket, this.roomList, message.ipAddr);
+            console.log("left room list");
+            
             console.log("creating room...");
 
             // Generate an unique room code
@@ -40,6 +41,7 @@ export class RoomController {
 
             this.roomList[newRoomCode] = {
                 "internalRoomNo": newRoomCode,
+                "gameSettings": this.roomHelper.defaultGameSettings(),
                 "playerList": playerList
             }
 
@@ -52,9 +54,7 @@ export class RoomController {
             socket.emit("game_create_error", e.message);
         }
         
-        
     }
-
 
     @OnMessage("join_room")
     public async joinGame(@SocketIO() io: Server, @ConnectedSocket() socket: Socket, @MessageBody() message: any) {
@@ -82,11 +82,14 @@ export class RoomController {
                 this.roomList[message.roomCode]["playerList"].push({
                     [message.ipAddr]:message.playerInfo
                 });
-    
-                // Send info back
-                socket.emit("room_joined", {
+
+
+                console.log("joined room!!!!");
+                // Send info back to all room connected sockets
+                io.in(message.roomCode).emit("on_game_room_update", {
                     roomCode: message.roomCode,
                     internalRoomNo: message.roomCode,
+                    gameSettings: this.roomList[message.roomCode]["gameSettings"],
                     playerList: this.roomList[message.roomCode]["playerList"]
                 });
                 

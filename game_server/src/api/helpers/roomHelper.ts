@@ -3,6 +3,12 @@ import { Server, Socket } from "socket.io";
 import { convertTypeAcquisitionFromJson, createImportSpecifier, formatDiagnosticsWithColorAndContext } from "typescript";
 export class RoomHelper {
     
+    public defaultGameSettings(){
+        return {
+            "difficulty":"2",
+            "wordLength":"5"
+        }
+    }
 
     public generateRoomCode(codeLength: number){
         let base = "ABCEDFGHIJKLMNOPQRSTUVWXYZ1234567890";
@@ -24,6 +30,7 @@ export class RoomHelper {
         for(let idx in socketRooms){
             console.log("leaving room: ", socketRooms[idx]);
             await socket.leave(socketRooms[idx]);
+            io.to(socketRooms[idx])
         }
     }
 
@@ -46,6 +53,9 @@ export class RoomHelper {
                             this.printRoomPlayerDetail(roomList);
                             const ip = Object.keys(roomList[roomCode]["playerList"][0])[0];
                             roomList[roomCode]["playerList"][idx][ip]["role"]=1;
+
+                            // Once left, needs to send game room update broadcast to the room.
+                            io.in(roomCode).emit("on_game_room_update", roomList[roomCode]);
                         }
                             
                     }
@@ -79,6 +89,8 @@ export class RoomHelper {
 
         }
     }
+
+    
 
     private isGameRoomHasPlayer(roomList:{}, roomCode:string){
         return roomCode in roomList && roomList[roomCode]["playerList"].length > 0;
