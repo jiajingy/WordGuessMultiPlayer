@@ -112,7 +112,6 @@ export default function JoinRoomDialog(props: any) {
             handleSetAlertContent("Cannot join room, double check your room code.");
             handleSetShowAlert(true);
             setJoiningRoom(false);
-            
         });
 
 

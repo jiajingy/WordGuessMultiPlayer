@@ -21,7 +21,15 @@ import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { useLocation, useNavigate } from 'react-router-dom';
+import gameContext from '../../gameContext';
+import gameService from '../../services/gameService';
+import publicIp from 'public-ip';
+import { internalIpV4 } from 'internal-ip';
+import socketService from '../../services/socketService';
+import Alert from '@mui/material/Alert';
+import Stack from '@mui/material/Stack';
 
 
 
@@ -65,15 +73,14 @@ const Input = styled(MuiInput)`
 const minWordLength = (process.env.REACT_APP_WORD_LENGTH_MIN) ? parseInt(process.env.REACT_APP_WORD_LENGTH_MIN) : 5;
 const maxWordLength = (process.env.REACT_APP_WORD_LENGTH_MAX) ? parseInt(process.env.REACT_APP_WORD_LENGTH_MAX) : 7;
 
-
-
 export default function RoomGameSettings(props: any) {
     const navigate = useNavigate();
-
+    const goToHomePage = () => navigate("/");
     let isPageRdyToShow = false;
 
     const { state } = useLocation() as any;
     console.log(state);
+    
     
     isPageRdyToShow = (state===null) ? false : true;
 
@@ -118,9 +125,6 @@ export default function RoomGameSettings(props: any) {
     }
 
     const [canStartGame, setCanStartGame] = React.useState(true);
-
-
-
     const [creatingNewGame, setCreatingNewGame] = React.useState(false)
     
     const handleCreateNewGame = () => {
@@ -130,10 +134,65 @@ export default function RoomGameSettings(props: any) {
         console.log("Difficulty: " + difficulty);
         console.log("Word Length: " + wordLengthSelected);
     }
-   
+
+    const[showAlert, setShowAlert] = React.useState(false);
+    const handleSetShowAlert = (newValue:boolean)=>{
+        setShowAlert(newValue);
+    }
+    const[alertContent, setAlertContent] = React.useState("");
+    const handleSetAlertContent = (newValue:string)=>{
+        setAlertContent(newValue);
+    }
+
+    const [canLeaveRoom, setCanLeaveRoom] = React.useState(true);
+    const [leavingRoom, setLeavingRoom] = React.useState(false)
+    const handleCanLeaveRoom = async () => {
+        const socket = socketService.socket;
+        if (!socket)
+            return;
+        const publicIpAddr = await publicIp.v4();
+        const internalIpAddr = await internalIpV4();
+        const ipAddr = publicIpAddr + "-" + internalIpAddr;
+
+        console.log("leaving room");
+        setLeavingRoom(true);
+        // no need to wait
+        // let game server process
+        // we direct user back to homepage
+        const leaveGameRoomResult = gameService.LeaveGameRoom(socket, ipAddr).catch((err)=>{
+            handleSetAlertContent("Cannot leave room...something is wrong");
+            handleSetShowAlert(true);
+            setLeavingRoom(false);
+        });
+
+        goToHomePage();
+        
+    }
+
+    const [gameSettings, setGameSettings] = React.useState(state.gameSettings);
+    const handleChangeGameSettings= (newGameSettings: any) => {
+        setGameSettings(newGameSettings);
+    }
+
+    const handleGameRoomUpdate = () => {
+        if (socketService.socket){
+            gameService.onGameRoomUpdate(socketService.socket, (newGameRoom:any) => {
+                console.log("enteredOngameroomupdate");
+                handleChangeGameSettings(newGameRoom.gameSettings);
+            });
+        }
+    }
+
+    React.useEffect(() => {
+        console.log("user effect enteredOngameroomupdate");
+        handleGameRoomUpdate();
+
+    }, []);
 
     return (
         <Container>
+            
+            {showAlert ? <div><br /><Alert severity="error">{alertContent}</Alert></div> : <></> }
             <br />
             <Typography component="h2" variant="h5" >Room <Chip label={isPageRdyToShow?state.roomCode:"(no available room)"} color="success" size="small" icon={<HomeOutlinedIcon />} variant="outlined" /></Typography>
             <br />
@@ -156,10 +215,7 @@ export default function RoomGameSettings(props: any) {
                     <MenuItem value={"2"}>Medium</MenuItem>
                     <MenuItem value={"3"}>Hard</MenuItem>
                 </Select>
-               
-
-                
-                
+              
             </FormControl>
             <br />
             <br />
@@ -214,7 +270,10 @@ export default function RoomGameSettings(props: any) {
             <br />
                 
             <Box display="flex" justifyContent="flex-end" alignItems="flex-end">
-                <LoadingButton variant="contained" color="success" startIcon={<FingerprintIcon />} disabled={!canStartGame} onClick={handleCreateNewGame} loading={creatingNewGame}>Start Game!</LoadingButton>
+                <Stack direction="row" spacing={2}>
+                    <LoadingButton variant="contained" color="error" startIcon={<LogoutIcon />} disabled={!canLeaveRoom || creatingNewGame} onClick={handleCanLeaveRoom} loading={leavingRoom}>Leave Room</LoadingButton>
+                    <LoadingButton variant="contained" color="success" startIcon={<FingerprintIcon />} disabled={!canStartGame || leavingRoom} onClick={handleCreateNewGame} loading={creatingNewGame}>Start Game!</LoadingButton>
+                </Stack>
             </Box>
             <br />
         </Container>

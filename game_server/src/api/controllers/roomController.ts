@@ -65,8 +65,6 @@ export class RoomController {
 
             const connectedSockets = io.sockets.adapter.rooms.get(message.roomCode);
 
-
-            console.log(connectedSockets);
             console.log(connectedSockets.size);
             console.log(this.roomList[message.roomCode]);
 
@@ -101,7 +99,19 @@ export class RoomController {
                 error: e.message   
             });
         }
+    }
 
-        
+    @OnMessage("leave_room")
+    public async leaveGame(@SocketIO() io: Server, @ConnectedSocket() socket: Socket, @MessageBody() message: any) {
+        try{
+            await this.roomHelper.leaveAllRooms(io, socket);
+            console.log("left socket room");
+            this.roomList = await this.roomHelper.leaveAllRoomsArray(io, socket, this.roomList, message.ipAddr);
+            console.log("left room list");
+
+        }catch(e){
+            console.log("errored?");
+            socket.emit("leave_room_error", {error:e.message});
+        }
     }
 }

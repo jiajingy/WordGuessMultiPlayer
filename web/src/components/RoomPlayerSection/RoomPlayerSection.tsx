@@ -88,7 +88,7 @@ export default function RoomPlayerSection(props: any) {
                                 const playerIp = Object.keys(player)[0];
                                 return <ListItem key={playerIp}>
                                     <ListItemIcon>
-                                        {playerObj.role === 1 ? <StarsIcon /> : <AccountCircleIcon />}
+                                        {playerObj.role === 1 ? <StarsIcon color="error"/> : <AccountCircleIcon />}
                                     </ListItemIcon>
                                     <ListItemText
                                         primary={playerObj.playerName}

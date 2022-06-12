@@ -30,7 +30,7 @@ export class RoomHelper {
         for(let idx in socketRooms){
             console.log("leaving room: ", socketRooms[idx]);
             await socket.leave(socketRooms[idx]);
-            io.to(socketRooms[idx])
+            //io.to(socketRooms[idx])
         }
     }
 
@@ -38,7 +38,9 @@ export class RoomHelper {
         for (const roomCode in roomList){
             for (const idx in roomList[roomCode]["playerList"]){
                 const ip = Object.keys(roomList[roomCode]["playerList"][idx])[0];
+                console.log(ip + "|!!!|" + ipAddr);
                 if (ip == ipAddr){
+                    console.log("im in this")
                     this.printRoomPlayerDetail(roomList);
                     roomList[roomCode]["playerList"].splice(idx, 1);
                     // After leave room, check if that room is empty
@@ -46,18 +48,19 @@ export class RoomHelper {
                     if (!this.isGameRoomHasPlayer(roomList, roomCode)){
                         delete roomList[roomCode];
                     }
+                    // If still has player(s) in room
+                    // Automatically promote first position player to game master
+                    else if(!this.isGameMasterInRoom(roomList, roomCode)){   
+                        this.printRoomPlayerDetail(roomList);
+                        const ip = Object.keys(roomList[roomCode]["playerList"][0])[0];
+                        roomList[roomCode]["playerList"][idx][ip]["role"]=1;
+                        // Once left, needs to send game room update broadcast to the room.
+                        io.in(roomCode).emit("on_game_room_update", roomList[roomCode]);
+                    }
+                    // If game master still in room
+                    // Then just broadcast on_game_room_update
                     else{
-                        // If still has player(s) in room
-                        // Automatically promote first position player to game master
-                        if (!this.isGameMasterInRoom(roomList, roomCode)){
-                            this.printRoomPlayerDetail(roomList);
-                            const ip = Object.keys(roomList[roomCode]["playerList"][0])[0];
-                            roomList[roomCode]["playerList"][idx][ip]["role"]=1;
-
-                            // Once left, needs to send game room update broadcast to the room.
-                            io.in(roomCode).emit("on_game_room_update", roomList[roomCode]);
-                        }
-                            
+                        io.in(roomCode).emit("on_game_room_update", roomList[roomCode]);
                     }
                     
                 }
