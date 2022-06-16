@@ -12,6 +12,8 @@ import AboutPage from './pages/AboutPage/AboutPage';
 import GameRoomPage from './pages/GameRoomPage/GameRoomPage';
 
 import socketService from './services/socketService';
+import publicIp from 'public-ip';
+import { internalIpV4 } from 'internal-ip';
 import GameContext, { IGameContextProps } from './gameContext';
 
 
@@ -21,9 +23,18 @@ const GAME_SERVER_URL = process.env.REACT_APP_GAME_SERVER_URL as string;
 export default function App () {
 
   const [isInRoom, setInRoom] = useState(false);
+  const [ipAddr, setIpAddr] = useState("");
+
+
 
   const connectSocket = async () => {
+    
     console.log(GAME_SERVER_URL);
+
+    const publicIpAddr = await publicIp.v4();
+    const internalIpAddr = await internalIpV4();
+    setIpAddr(publicIpAddr + "-" + internalIpAddr)
+
     const socket = await socketService.connect(GAME_SERVER_URL).catch((err)=> {
       console.log("Cannot Connect to Server Error: ", err);
     });
@@ -35,7 +46,8 @@ export default function App () {
 
   const gameContextValue: IGameContextProps = {
     isInRoom,
-    setInRoom
+    setInRoom,
+    ipAddr
   }
 
   return (

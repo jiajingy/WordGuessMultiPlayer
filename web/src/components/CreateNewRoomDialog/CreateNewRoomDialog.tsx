@@ -18,8 +18,10 @@ import { internalIpV4 } from 'internal-ip';
 import Alert from '@mui/material/Alert';
 
 
+import gameContext from '../../gameContext';
 import gameService from '../../services/gameService';
 import socketService from '../../services/socketService';
+import RoomGameSettings from '../RoomGameSettings/RoomGameSettings';
 
 
 
@@ -35,9 +37,14 @@ const Transition = React.forwardRef(function Transition(
 const maxPlayerNameLength = (process.env.REACT_APP_PLAYER_NAME_LENGTH_MAX) ? parseInt(process.env.REACT_APP_PLAYER_NAME_LENGTH_MAX) : 20;
 
 export default function CreateNewRoomDialog(props: any) {
+    const {
+        isInRoom,
+        setInRoom,
+        ipAddr
+    } = React.useContext(gameContext);
 
     const navigate = useNavigate();
-    const goToGameRoomPage = (roomCode: any, internalRoomId: any, playerList: any) => navigate("/" + roomCode, {state:{roomCode:roomCode, internalRoomId: internalRoomId, playerList:playerList}});
+    const goToGameRoomPage = (roomCode: any, internalRoomId: any, gameSettings: any, playerList: any) => navigate("/" + roomCode, {state:{roomCode:roomCode, internalRoomId: internalRoomId, gameSettings: gameSettings, playerList:playerList}});
 
     const [playerName, setPlayerName] = React.useState("");
     const [playerNameErrorMessage, setPlayerNameErrorMessage] = React.useState("");
@@ -87,10 +94,6 @@ export default function CreateNewRoomDialog(props: any) {
         setCreatingNewRoom(true);
         handleSetShowAlert(false);
 
-        const publicIpAddr = await publicIp.v4();
-        const internalIpAddr = await internalIpV4();
-        const ipAddr = publicIpAddr + "-" + internalIpAddr;
-            
         const createGameRoomResult = await gameService.CreateGameRoom(socket, playerName, ipAddr).catch((err)=>{
             handleSetAlertContent("Cannot create room, something wrong with game server.");
             handleSetShowAlert(true);
@@ -105,6 +108,7 @@ export default function CreateNewRoomDialog(props: any) {
             goToGameRoomPage(
                 createGameRoomResult.roomCode,
                 createGameRoomResult.internalRoomId,
+                createGameRoomResult.gameSettings,
                 createGameRoomResult.playerList
             );        
         }

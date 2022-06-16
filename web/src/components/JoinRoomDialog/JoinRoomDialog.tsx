@@ -36,9 +36,10 @@ const Transition = React.forwardRef(function Transition(
 const maxPlayerNameLength = (process.env.REACT_APP_PLAYER_NAME_LENGTH_MAX) ? parseInt(process.env.REACT_APP_PLAYER_NAME_LENGTH_MAX) : 20;
 
 export default function JoinRoomDialog(props: any) {
+    const { setInRoom, isInRoom, ipAddr } = React.useContext(gameContext); 
 
     const navigate = useNavigate();
-    const goToGameRoomPage = (roomCode: any, internalRoomId: any, playerList: any) => navigate("/" + roomCode, {state:{roomCode:roomCode, internalRoomId: internalRoomId, playerList:playerList}});
+    const goToGameRoomPage = (roomCode: any, internalRoomId: any, gameSettings: any, playerList: any) => navigate("/" + roomCode, {state:{roomCode:roomCode, internalRoomId: internalRoomId, gameSettings: gameSettings, playerList:playerList}});
 
     const [playerName, setPlayerName] = React.useState("");
     const [playerNameErrorMessage, setPlayerNameErrorMessage] = React.useState("");
@@ -89,7 +90,7 @@ export default function JoinRoomDialog(props: any) {
         setRoomCode(newValue);
     }
 
-    const { setInRoom, isInRoom } = React.useContext(gameContext); 
+    
     const [joiningRoom, setJoiningRoom] = React.useState(false)
     
     const handleJoinRoom = async () => {
@@ -103,10 +104,6 @@ export default function JoinRoomDialog(props: any) {
         console.log("joining room: " + roomCode);
         handleSetShowAlert(false);     
         setJoiningRoom(true);
-
-        const publicIpAddr = await publicIp.v4();
-        const internalIpAddr = await internalIpV4();
-        const ipAddr = publicIpAddr + "-" + internalIpAddr;
 
         const joinedRoomResult = await gameService.JoinGameRoom(socket, roomCode, playerName, ipAddr).catch((err)=>{
             handleSetAlertContent("Cannot join room, double check your room code.");
@@ -127,6 +124,7 @@ export default function JoinRoomDialog(props: any) {
         goToGameRoomPage(
             joinedRoomResult.roomCode,
             joinedRoomResult.interalRoomId,
+            joinedRoomResult.gameSettings,
             joinedRoomResult.playerList
         );
         

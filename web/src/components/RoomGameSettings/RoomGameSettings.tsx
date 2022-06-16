@@ -74,54 +74,49 @@ const minWordLength = (process.env.REACT_APP_WORD_LENGTH_MIN) ? parseInt(process
 const maxWordLength = (process.env.REACT_APP_WORD_LENGTH_MAX) ? parseInt(process.env.REACT_APP_WORD_LENGTH_MAX) : 7;
 
 export default function RoomGameSettings(props: any) {
+
+    const {
+        isInRoom,
+        setInRoom,
+        ipAddr
+    } = React.useContext(gameContext);
+
+
     const navigate = useNavigate();
     const goToHomePage = () => navigate("/");
     let isPageRdyToShow = false;
 
     const { state } = useLocation() as any;
-    console.log(state);
-    
     
     isPageRdyToShow = (state===null) ? false : true;
 
-    // Redirect to home page if no room ID
-    // This means user accesses this url directly
-    React.useEffect(() => {
-        if(!isPageRdyToShow){
-            navigate("/home");
-        }
-    }, []);
-        
-
-    // Default to Medium difficulty
-    const [difficulty, setDifficulty] = React.useState("2");
+    
     const handleDiffcultyChange = (event: SelectChangeEvent) => {
-        setDifficulty(event.target.value as string);
-        console.log(difficulty);
+        gameSettings.difficulty = event.target.value as string;
+        console.log("change diff to: ", gameSettings.difficulty);
     }
 
-    const [wordLength, setWordLength] = React.useState<number | string | Array<number | string>>(
-        minWordLength,
-    );
+
     const handleWordLengthSliderChange = (event: Event, newValue: number | number[]) => {
-        setWordLength(newValue);
-        console.log(wordLength);
+        gameSettings.wordLength = newValue;
+        console.log("slider change: ", gameSettings.wordLength);
     };
     const handleWordLengthInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setWordLength((event.target.value) ? minWordLength : Number(event.target.value));
-        console.log(wordLength);
+        gameSettings.wordLength = (event.target.value) ? minWordLength : Number(event.target.value);
+        console.log("length input change: ", gameSettings.wordLength);
     };
     const handleWordLengthBlur = () => {
-        if (wordLength < minWordLength) {
-            setWordLength(minWordLength);
-        } else if (wordLength > maxWordLength) {
-            setWordLength(maxWordLength);
+        if ( gameSettings.wordLength < minWordLength) {
+            gameSettings.wordLength = minWordLength;
+        } else if ( gameSettings.wordLength > maxWordLength) {
+            gameSettings.wordLength = maxWordLength;
         }
     };
 
     const [mixWord, setMixWord] = React.useState(false);
     const handleMixWord = () => {
         setMixWord(!mixWord);
+        gameSettings.wordLength = "a";
     }
 
     const [canStartGame, setCanStartGame] = React.useState(true);
@@ -130,9 +125,9 @@ export default function RoomGameSettings(props: any) {
     const handleCreateNewGame = () => {
         console.log("creating new game...");
         setCreatingNewGame(!creatingNewGame);
-        const wordLengthSelected = (mixWord) ? "a" : wordLength;
-        console.log("Difficulty: " + difficulty);
-        console.log("Word Length: " + wordLengthSelected);
+        gameSettings.wordLength = (mixWord) ? "a" : gameSettings.wordLength;
+        //console.log("Difficulty: " + difficulty);
+        console.log("Word Length final: " + gameSettings.wordLength);
     }
 
     const[showAlert, setShowAlert] = React.useState(false);
@@ -174,20 +169,52 @@ export default function RoomGameSettings(props: any) {
         setGameSettings(newGameSettings);
     }
 
+    const [amIGameMaster, setAmIGameMaster] = React.useState(false)
+    const handleAmIGameMaster = (newPlayerList: any) =>{
+        let result = false;
+        for(const idx in newPlayerList){
+            const ip = Object.keys(newPlayerList[idx])[0];
+            console.log(ip);
+            console.log(newPlayerList[idx]);
+            if (ip === ipAddr && newPlayerList[idx][ip] !==undefined && newPlayerList[idx][ip]["role"] === 1)
+                result = true;
+        }
+        console.log("ami game master: ", result);
+        setAmIGameMaster(result);
+    }
+
+    const [playerList, setPlayerList] = React.useState(state.playerList);
+    const handleChangePlayerList = (newPlayerList: any) => {
+        setPlayerList(newPlayerList);
+    }
+
     const handleGameRoomUpdate = () => {
         if (socketService.socket){
             gameService.onGameRoomUpdate(socketService.socket, (newGameRoom:any) => {
                 console.log("enteredOngameroomupdate");
+                console.log(newGameRoom);
                 handleChangeGameSettings(newGameRoom.gameSettings);
+                handleChangePlayerList(newGameRoom.playerList);
+                handleAmIGameMaster(playerList);
             });
         }
     }
 
+
+
+    // Redirect to home page if no room ID
+    // This means user accesses this url directly
     React.useEffect(() => {
-        console.log("user effect enteredOngameroomupdate");
+        if(!isPageRdyToShow){
+            navigate("/home");
+        }
+
         handleGameRoomUpdate();
 
     }, []);
+
+    
+    
 
     return (
         <Container>
@@ -206,14 +233,15 @@ export default function RoomGameSettings(props: any) {
                 <Select
                     labelId="difficulty-label"
                     id="difficulty-select"
-                    value={difficulty}
+                    value={gameSettings.difficulty}
                     label="Difficulty"
                     onChange={handleDiffcultyChange}
                     color="success"
+                    disabled={!amIGameMaster}
                     >
-                    <MenuItem value={"1"}>Easy</MenuItem>
-                    <MenuItem value={"2"}>Medium</MenuItem>
-                    <MenuItem value={"3"}>Hard</MenuItem>
+                    <MenuItem value="1">Easy</MenuItem>
+                    <MenuItem value="2">Medium</MenuItem>
+                    <MenuItem value="3">Hard</MenuItem>
                 </Select>
               
             </FormControl>
@@ -229,7 +257,7 @@ export default function RoomGameSettings(props: any) {
                     </Grid>
                     <Grid item xs>
                     <Slider
-                        value={typeof wordLength === 'number' ? wordLength : minWordLength}
+                        value={typeof gameSettings.wordLength === 'number' ? gameSettings.wordLength : minWordLength}
                         onChange={handleWordLengthSliderChange}
                         aria-labelledby="word-length-slider-label"
                         step={1}
@@ -240,7 +268,7 @@ export default function RoomGameSettings(props: any) {
                     </Grid>
                     <Grid item>
                     <Input
-                        value={wordLength}
+                        value={gameSettings.wordLength}
                         size="small"
                         onChange={handleWordLengthInputChange}
                         onBlur={handleWordLengthBlur}

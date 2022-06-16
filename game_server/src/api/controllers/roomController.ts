@@ -37,17 +37,21 @@ export class RoomController {
             playerList.push({
                 [message.ipAddr]: message.playerInfo,
             });
-            let internalRoomNo = this.roomHelper.getInRoomInternalId(io, socket);
+            //let internalRoomNo = this.roomHelper.getInRoomInternalId(io, socket);
 
             this.roomList[newRoomCode] = {
+                "roomCode": newRoomCode,
                 "internalRoomNo": newRoomCode,
                 "gameSettings": this.roomHelper.defaultGameSettings(),
                 "playerList": playerList
             }
 
             // Send back to client
-            socket.emit("game_created", {roomCode:newRoomCode, internalRoomNo:newRoomCode,  playerList:playerList});
+            socket.emit("game_created", this.roomList[newRoomCode]);
 
+            // broadcast to all clients in room as well
+            io.in(newRoomCode).emit("on_game_room_update", this.roomList[newRoomCode]);
+            
             console.log("# of rooms: ", Object.keys(this.roomList).length);
             console.log(this.roomHelper.printRoomPlayerDetail(this.roomList));
         }catch(e){
@@ -84,12 +88,15 @@ export class RoomController {
 
                 console.log("joined room!!!!");
                 // Send info back to all room connected sockets
+                /*
                 io.in(message.roomCode).emit("on_game_room_update", {
                     roomCode: message.roomCode,
                     internalRoomNo: message.roomCode,
                     gameSettings: this.roomList[message.roomCode]["gameSettings"],
                     playerList: this.roomList[message.roomCode]["playerList"]
                 });
+                */
+                io.in(message.roomCode).emit("on_game_room_update", this.roomList[message.roomCode]);
                 
             }
 

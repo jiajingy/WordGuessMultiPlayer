@@ -19,11 +19,13 @@ class GameService {
         return await this.timeout(this._leaveGameRoom(socket, ipAddr), this._timeoutLimit);
     }
 
+
     private async _createGameRoom(socket:Socket, playerName: string, ipAddr: string): Promise<any>{
         return new Promise((resolve, reject) => {
             
             socket.emit("create_game", { playerInfo:{playerName: playerName, role:1, lastUpdateDT:new Date()}, ipAddr: ipAddr });
             socket.on("game_created", (res)=>resolve(res));
+            socket.on("on_game_room_update", (res)=>resolve(res));
             socket.on("game_create_error", (err)=> reject(err));
              
         });

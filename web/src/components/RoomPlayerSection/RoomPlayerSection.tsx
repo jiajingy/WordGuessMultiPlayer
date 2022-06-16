@@ -31,19 +31,18 @@ import ListItemText from '@mui/material/ListItemText';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import StarsIcon from '@mui/icons-material/Stars';
 import { useLocation, useNavigate } from 'react-router-dom';
+import gameContext from '../../gameContext';
 import gameService from '../../services/gameService';
 import socketService from '../../services/socketService';
 
 
 export default function RoomPlayerSection(props: any) {
-    
+    const { setInRoom, isInRoom, ipAddr } = React.useContext(gameContext); 
 
     const navigate = useNavigate();
     const { state } = useLocation() as any;
     let isPageRdyToShow = false;
     isPageRdyToShow = (state===null) ? false : true;
-
-    console.log(state);
 
     const [playerList, setPlayerList] = React.useState(state.playerList);
     const handleChangePlayerList = (newPlayerList: any) => {
