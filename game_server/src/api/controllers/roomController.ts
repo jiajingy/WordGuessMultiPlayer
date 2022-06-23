@@ -121,4 +121,18 @@ export class RoomController {
             socket.emit("leave_room_error", {error:e.message});
         }
     }
+
+    @OnMessage("update_room")
+    public async UpdateGameRoomSettings(@SocketIO() io: Server, @ConnectedSocket() socket: Socket, @MessageBody() message: any){
+        try{
+            this.roomList[message.roomCode]["gameSettings"] = message.gameSettings;
+            console.log(message.roomCode + " game room updated");
+            io.in(message.roomCode).emit("on_game_room_update", this.roomList[message.roomCode]);
+        }catch(e){
+            console.log("errored?");
+            socket.emit("update_room_error", {error:e.message});
+        }
+
+        
+    }
 }

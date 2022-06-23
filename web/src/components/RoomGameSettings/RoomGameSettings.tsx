@@ -30,7 +30,8 @@ import { internalIpV4 } from 'internal-ip';
 import socketService from '../../services/socketService';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
-
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import { InputAdornment, TextField } from '@mui/material';
 
 
 const Android12Switch = styled(Switch)(({ theme }) => ({
@@ -90,11 +91,39 @@ export default function RoomGameSettings(props: any) {
     
     isPageRdyToShow = (state===null) ? false : true;
 
+    const difficultyTranslate = (val: string) => {
+        switch (val){
+            case "1": return "Easy";
+            case "2": return "Medium";
+            case "3": return "Hard";
+            default: return "Error";
+        }
+    }
+    const [difficulty, setDifficulty] = React.useState("2");
+    const handleDifficultyChange = async (event: SelectChangeEvent) =>{
+        setDifficulty(event.target.value as string);
+        gameSettings.difficulty = event.target.value as string;
+        console.log("game new diff: ", gameSettings.difficulty);
+
+        const socket = socketService.socket;
+        if (!socket)
+            return;
+
+
+        const updateGameRoom = await gameService.UpdateGameRoomSettings(socket, state.roomCode, gameSettings).catch((err)=>{
+            handleSetAlertContent("Cannot update room...something is wrong");
+            handleSetShowAlert(true);
+        });
+
+        console.log("new update from server: ", gameSettings.difficulty);
+        console.log(gameSettings.difficulty);
+    };
     
     const handleDiffcultyChange = (event: SelectChangeEvent) => {
         gameSettings.difficulty = event.target.value as string;
+        setGameSettings(gameSettings);
         console.log("change diff to: ", gameSettings.difficulty);
-    }
+    };
 
 
     const handleWordLengthSliderChange = (event: Event, newValue: number | number[]) => {
@@ -179,7 +208,7 @@ export default function RoomGameSettings(props: any) {
             if (ip === ipAddr && newPlayerList[idx][ip] !==undefined && newPlayerList[idx][ip]["role"] === 1)
                 result = true;
         }
-        console.log("ami game master: ", result);
+        console.log("am i game master: ", result);
         setAmIGameMaster(result);
     }
 
@@ -225,73 +254,93 @@ export default function RoomGameSettings(props: any) {
             <br />
             <Divider>Settings</Divider>
             <br />
-            <FormControl fullWidth>
+            {
+                amIGameMaster ?
+                // Game Master View
+                <div>
+                    <FormControl fullWidth>
+    
+                        <Tooltip placement="top" title="The difficulty means how many percentage of number of letters will be hidden from the word. You will need to fill in more letters if you pick harder difficulty.">
+                            <InputLabel id="difficulty-label" color="success">Difficulty</InputLabel>
+                        </Tooltip>
+                        
 
-                <Tooltip placement="top" title="The difficulty means how many percentage of number of letters will be hidden from the word. You will need to fill in more letters if you pick harder difficulty.">
-                    <InputLabel id="difficulty-label" color="success">Difficulty</InputLabel>
-                </Tooltip>
-                <Select
-                    labelId="difficulty-label"
-                    id="difficulty-select"
-                    value={gameSettings.difficulty}
-                    label="Difficulty"
-                    onChange={handleDiffcultyChange}
-                    color="success"
-                    disabled={!amIGameMaster}
-                    >
-                    <MenuItem value="1">Easy</MenuItem>
-                    <MenuItem value="2">Medium</MenuItem>
-                    <MenuItem value="3">Hard</MenuItem>
-                </Select>
-              
-            </FormControl>
-            <br />
-            <br />
-            <Box sx={{ width: 250 }}>
-                <Typography variant="body2" id="word-length-slider-label" gutterBottom>
-                    Word Length
-                </Typography>
-                <Grid container spacing={2} alignItems="center">
-                    <Grid item>
-                    <AbcRoundedIcon />
-                    </Grid>
-                    <Grid item xs>
-                    <Slider
-                        value={typeof gameSettings.wordLength === 'number' ? gameSettings.wordLength : minWordLength}
-                        onChange={handleWordLengthSliderChange}
-                        aria-labelledby="word-length-slider-label"
-                        step={1}
-                        min={minWordLength}
-                        max={maxWordLength}
-                        disabled={mixWord}
+                            <Select
+                                labelId="difficulty-label"
+                                id="difficulty-select"
+                                value={difficulty}
+                                label="Difficulty"
+                                onChange={handleDifficultyChange}
+                                color="success"
+                                >
+                                <MenuItem value={"1"}>Easy</MenuItem>
+                                <MenuItem value={"2"}>Medium</MenuItem>
+                                <MenuItem value={"3"}>Hard</MenuItem>
+                            </Select>
+                    </FormControl>
+                    <br />
+                    <br />
+                    <Box sx={{ width: 250 }}>
+                        <Typography variant="body2" id="word-length-slider-label" gutterBottom>
+                            Word Length
+                        </Typography>
+                        <Grid container spacing={2} alignItems="center">
+                            <Grid item>
+                            <AbcRoundedIcon />
+                            </Grid>
+                            <Grid item xs>
+                            <Slider
+                                value={typeof gameSettings.wordLength === 'number' ? gameSettings.wordLength : minWordLength}
+                                onChange={handleWordLengthSliderChange}
+                                aria-labelledby="word-length-slider-label"
+                                step={1}
+                                min={minWordLength}
+                                max={maxWordLength}
+                                disabled={mixWord}
+                            />
+                            </Grid>
+                            <Grid item>
+                            <Input
+                                value={gameSettings.wordLength}
+                                size="small"
+                                onChange={handleWordLengthInputChange}
+                                onBlur={handleWordLengthBlur}
+                                disabled={mixWord}
+                                inputProps={{
+                                    step: 1,
+                                    min: {minWordLength},
+                                    max: {maxWordLength},
+                                    type: 'number',
+                                    'aria-labelledby': 'word-length-slider-label',
+                                }}
+                            />
+                            </Grid>
+                        </Grid>
+                    </Box>
+                    
+                    <br />
+                    <FormControlLabel
+                        control={<Android12Switch checked={mixWord} onChange={handleMixWord} />}
+                        label={<Typography variant="body2">Mix All Words</Typography>}
+                        labelPlacement="start"
+                        style={{marginLeft:"0px"}}
                     />
-                    </Grid>
-                    <Grid item>
-                    <Input
-                        value={gameSettings.wordLength}
-                        size="small"
-                        onChange={handleWordLengthInputChange}
-                        onBlur={handleWordLengthBlur}
-                        disabled={mixWord}
-                        inputProps={{
-                            step: 1,
-                            min: {minWordLength},
-                            max: {maxWordLength},
-                            type: 'number',
-                            'aria-labelledby': 'word-length-slider-label',
-                        }}
-                    />
-                    </Grid>
-                </Grid>
-            </Box>
+                </div>
+                :
+                // Player View
+                <div>
+                    <Box sx={{width: 500, maxWidth:"100%"}}>
+                        <FormControl variant="standard" fullWidth>
+                            <Tooltip placement="top" title="The difficulty means how many percentage of number of letters will be hidden from the word. You will need to fill in more letters if you pick harder difficulty.">
+                                <TextField aria-readonly fullWidth label="Difficulty" value={difficultyTranslate(gameSettings.difficulty)}/>
+                            </Tooltip>
+                        </FormControl>
+                    </Box>
+                    
+                    <br />
+                </div>
+            }
             
-            <br />
-            <FormControlLabel
-                control={<Android12Switch checked={mixWord} onChange={handleMixWord} />}
-                label={<Typography variant="body2">Mix All Words</Typography>}
-                labelPlacement="start"
-                style={{marginLeft:"0px"}}
-            />
 
 
             <Divider></Divider>

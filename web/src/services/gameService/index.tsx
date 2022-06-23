@@ -19,6 +19,10 @@ class GameService {
         return await this.timeout(this._leaveGameRoom(socket, ipAddr), this._timeoutLimit);
     }
 
+    public async UpdateGameRoomSettings(socket:Socket, roomCode:string, gameSettings: any): Promise<any>{
+        return await this.timeout(this._updateGameRoomSettings(socket, roomCode, gameSettings), this._timeoutLimit);
+    }
+
 
     private async _createGameRoom(socket:Socket, playerName: string, ipAddr: string): Promise<any>{
         return new Promise((resolve, reject) => {
@@ -45,6 +49,14 @@ class GameService {
             socket.emit("leave_room", {ipAddr: ipAddr});
             socket.on("on_game_room_update",(res)=>resolve(res));
             socket.on("leave_room_error",(err)=>reject(err));
+        });
+    }
+
+    private async _updateGameRoomSettings(socket: Socket, roomCode: string, gameSettings: any): Promise<any>{
+        return new Promise((resolve, reject) => {
+            socket.emit("update_room", {roomCode: roomCode, gameSettings:gameSettings});
+            socket.on("on_game_room_update", (res)=>resolve(res));
+            socket.on("update_room_error", (err)=> reject(err));
         });
     }
 
