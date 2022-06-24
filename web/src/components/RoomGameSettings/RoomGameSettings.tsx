@@ -99,7 +99,7 @@ export default function RoomGameSettings(props: any) {
             default: return "Error";
         }
     }
-    const [difficulty, setDifficulty] = React.useState("2");
+    const [difficulty, setDifficulty] = React.useState(state.gameSettings.difficulty);
     const handleDifficultyChange = async (event: SelectChangeEvent) =>{
         setDifficulty(event.target.value as string);
         gameSettings.difficulty = event.target.value as string;
@@ -119,20 +119,41 @@ export default function RoomGameSettings(props: any) {
         console.log(gameSettings.difficulty);
     };
     
-    const handleDiffcultyChange = (event: SelectChangeEvent) => {
-        gameSettings.difficulty = event.target.value as string;
-        setGameSettings(gameSettings);
-        console.log("change diff to: ", gameSettings.difficulty);
-    };
-
-
-    const handleWordLengthSliderChange = (event: Event, newValue: number | number[]) => {
-        gameSettings.wordLength = newValue;
+    const [wordLength, setWordLength] = React.useState(state.gameSettings.wordLength);
+    const handleWordLengthChange = async (event, newValue) => {
+        gameSettings.wordLength = newValue as string;
+        setWordLength(newValue);
         console.log("slider change: ", gameSettings.wordLength);
-    };
-    const handleWordLengthInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const socket = socketService.socket;
+        if (!socket)
+            return;
+
+
+        const updateGameRoom = await gameService.UpdateGameRoomSettings(socket, state.roomCode, gameSettings).catch((err)=>{
+            handleSetAlertContent("Cannot update room...something is wrong");
+            handleSetShowAlert(true);
+        });
+        
+        console.log("new update from server, wordlength: ", gameSettings.wordLength);
+        console.log(gameSettings.wordLength);
+    }
+
+    const handleWordLengthInputChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         gameSettings.wordLength = (event.target.value) ? minWordLength : Number(event.target.value);
+        setWordLength((event.target.value) ? minWordLength : Number(event.target.value));
         console.log("length input change: ", gameSettings.wordLength);
+        const socket = socketService.socket;
+        if (!socket)
+            return;
+
+
+        const updateGameRoom = await gameService.UpdateGameRoomSettings(socket, state.roomCode, gameSettings).catch((err)=>{
+            handleSetAlertContent("Cannot update room...something is wrong");
+            handleSetShowAlert(true);
+        });
+
+        console.log("new update from server, wordlength: ", gameSettings.wordLength);
+        console.log(gameSettings.wordLength);
     };
     const handleWordLengthBlur = () => {
         if ( gameSettings.wordLength < minWordLength) {
@@ -142,10 +163,26 @@ export default function RoomGameSettings(props: any) {
         }
     };
 
-    const [mixWord, setMixWord] = React.useState(false);
-    const handleMixWord = () => {
-        setMixWord(!mixWord);
-        gameSettings.wordLength = "a";
+    const [mixWord, setMixWord] = React.useState(state.gameSettings.wordLength==="a");
+    const handleMixWord = async (event) => {
+        console.log("aaa,", typeof mixWord);
+        console.log("evebtm,", event.target.checked);
+        setMixWord(event.target.checked);
+        
+        console.log("ssss,", String(mixWord));
+        setWordLength(mixWord ? "a" : wordLength as string);
+        gameSettings.wordLength = mixWord ? "a" : wordLength as string;
+
+        console.log("check,", gameSettings.wordLength);
+
+        const socket = socketService.socket;
+        if (!socket)
+            return;
+
+        const updateGameRoom = await gameService.UpdateGameRoomSettings(socket, state.roomCode, gameSettings).catch((err)=>{
+            handleSetAlertContent("Cannot update room...something is wrong");
+            handleSetShowAlert(true);
+        });
     }
 
     const [canStartGame, setCanStartGame] = React.useState(true);
@@ -174,9 +211,7 @@ export default function RoomGameSettings(props: any) {
         const socket = socketService.socket;
         if (!socket)
             return;
-        const publicIpAddr = await publicIp.v4();
-        const internalIpAddr = await internalIpV4();
-        const ipAddr = publicIpAddr + "-" + internalIpAddr;
+        
 
         console.log("leaving room");
         setLeavingRoom(true);
@@ -290,8 +325,8 @@ export default function RoomGameSettings(props: any) {
                             </Grid>
                             <Grid item xs>
                             <Slider
-                                value={typeof gameSettings.wordLength === 'number' ? gameSettings.wordLength : minWordLength}
-                                onChange={handleWordLengthSliderChange}
+                                value={wordLength === "a" ? minWordLength : Number(wordLength)}
+                                onChange={handleWordLengthChange}
                                 aria-labelledby="word-length-slider-label"
                                 step={1}
                                 min={minWordLength}
@@ -301,7 +336,7 @@ export default function RoomGameSettings(props: any) {
                             </Grid>
                             <Grid item>
                             <Input
-                                value={gameSettings.wordLength}
+                                value={wordLength === "a" ? minWordLength : Number(wordLength)}
                                 size="small"
                                 onChange={handleWordLengthInputChange}
                                 onBlur={handleWordLengthBlur}
@@ -319,12 +354,15 @@ export default function RoomGameSettings(props: any) {
                     </Box>
                     
                     <br />
-                    <FormControlLabel
-                        control={<Android12Switch checked={mixWord} onChange={handleMixWord} />}
-                        label={<Typography variant="body2">Mix All Words</Typography>}
-                        labelPlacement="start"
-                        style={{marginLeft:"0px"}}
-                    />
+                    <Tooltip placement="top" title="If you select this, all words will be used in game">
+                        <FormControlLabel
+                            control={<Android12Switch checked={mixWord} onChange={handleMixWord} />}
+                            label={<Typography variant="body2">Mix All Words</Typography>}
+                            labelPlacement="start"
+                            style={{marginLeft:"0px"}}
+                            
+                        />
+                    </Tooltip>
                 </div>
                 :
                 // Player View
@@ -334,6 +372,14 @@ export default function RoomGameSettings(props: any) {
                             <Tooltip placement="top" title="The difficulty means how many percentage of number of letters will be hidden from the word. You will need to fill in more letters if you pick harder difficulty.">
                                 <TextField aria-readonly fullWidth label="Difficulty" value={difficultyTranslate(gameSettings.difficulty)}/>
                             </Tooltip>
+                        </FormControl>
+                    </Box>
+                    
+                    <br />
+
+                    <Box sx={{width: 500, maxWidth:"100%"}}>
+                        <FormControl variant="standard" fullWidth>
+                            <TextField aria-readonly fullWidth label="Word Length" value={gameSettings.wordLength}/>
                         </FormControl>
                     </Box>
                     
