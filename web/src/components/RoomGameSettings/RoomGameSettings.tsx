@@ -31,7 +31,8 @@ import socketService from '../../services/socketService';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import { InputAdornment, TextField } from '@mui/material';
+import { FormGroup, InputAdornment, TextField } from '@mui/material';
+import Checkbox from '@mui/material/Checkbox';
 
 
 const Android12Switch = styled(Switch)(({ theme }) => ({
@@ -120,14 +121,12 @@ export default function RoomGameSettings(props: any) {
     };
     
     const [wordLength, setWordLength] = React.useState(state.gameSettings.wordLength);
-    const handleWordLengthChange = async (event, newValue) => {
-        gameSettings.wordLength = newValue as string;
-        setWordLength(newValue);
-        console.log("slider change: ", gameSettings.wordLength);
+    const handleWordLengthChange = async (event) => {
+        gameSettings.wordLength = event.target.value as string;
+        setWordLength(event.target.value as string);
         const socket = socketService.socket;
         if (!socket)
             return;
-
 
         const updateGameRoom = await gameService.UpdateGameRoomSettings(socket, state.roomCode, gameSettings).catch((err)=>{
             handleSetAlertContent("Cannot update room...something is wrong");
@@ -163,26 +162,30 @@ export default function RoomGameSettings(props: any) {
         }
     };
 
-    const [mixWord, setMixWord] = React.useState(state.gameSettings.wordLength==="a");
+    const [mixWord, setMixWord] = React.useState(false);
     const handleMixWord = async (event) => {
-        console.log("aaa,", typeof mixWord);
-        console.log("evebtm,", event.target.checked);
-        setMixWord(event.target.checked);
+        console.log("00000 =" + mixWord + "," + event.target.checked);
+        await new Promise(res => setTimeout(res,2000));
+        setMixWord(true);
         
-        console.log("ssss,", String(mixWord));
-        setWordLength(mixWord ? "a" : wordLength as string);
-        gameSettings.wordLength = mixWord ? "a" : wordLength as string;
-
-        console.log("check,", gameSettings.wordLength);
-
+        console.log("check1111 =" + mixWord + "," + event.target.checked);
+        await new Promise(res => setTimeout(res,5000));
+        setWordLength(event.target.checked ? "a" : wordLength as string);
+        gameSettings.wordLength = event.target.checked ? "a" : wordLength as string;
+        
+        console.log("check-------,", gameSettings.wordLength);
+        await new Promise(res => setTimeout(res,5000));
         const socket = socketService.socket;
         if (!socket)
             return;
-
+        
         const updateGameRoom = await gameService.UpdateGameRoomSettings(socket, state.roomCode, gameSettings).catch((err)=>{
             handleSetAlertContent("Cannot update room...something is wrong");
             handleSetShowAlert(true);
         });
+
+        
+        
     }
 
     const [canStartGame, setCanStartGame] = React.useState(true);
@@ -230,7 +233,11 @@ export default function RoomGameSettings(props: any) {
 
     const [gameSettings, setGameSettings] = React.useState(state.gameSettings);
     const handleChangeGameSettings= (newGameSettings: any) => {
+        console.log("newgame:", newGameSettings.wordLength);
         setGameSettings(newGameSettings);
+
+        setMixWord(newGameSettings.wordLength==="a");
+        
     }
 
     const [amIGameMaster, setAmIGameMaster] = React.useState(false)
@@ -259,7 +266,7 @@ export default function RoomGameSettings(props: any) {
                 console.log(newGameRoom);
                 handleChangeGameSettings(newGameRoom.gameSettings);
                 handleChangePlayerList(newGameRoom.playerList);
-                handleAmIGameMaster(playerList);
+                handleAmIGameMaster(newGameRoom.playerList);
             });
         }
     }
@@ -275,7 +282,7 @@ export default function RoomGameSettings(props: any) {
 
         handleGameRoomUpdate();
 
-    }, []);
+    }, [mixWord]);
 
     
     
@@ -315,54 +322,30 @@ export default function RoomGameSettings(props: any) {
                     </FormControl>
                     <br />
                     <br />
-                    <Box sx={{ width: 250 }}>
-                        <Typography variant="body2" id="word-length-slider-label" gutterBottom>
-                            Word Length
-                        </Typography>
-                        <Grid container spacing={2} alignItems="center">
-                            <Grid item>
-                            <AbcRoundedIcon />
-                            </Grid>
-                            <Grid item xs>
-                            <Slider
-                                value={wordLength === "a" ? minWordLength : Number(wordLength)}
+                    <FormControl fullWidth>
+    
+                        <Tooltip placement="top" title="If you select this, all words will be used in game">
+                            <InputLabel id="wordLength-label" color="success">Word Length</InputLabel>
+                        </Tooltip>
+                        
+
+                            <Select
+                                labelId="wordLength-label"
+                                id="wordLength-select"
+                                value={gameSettings.wordLength}
+                                label="Difficulty"
                                 onChange={handleWordLengthChange}
-                                aria-labelledby="word-length-slider-label"
-                                step={1}
-                                min={minWordLength}
-                                max={maxWordLength}
-                                disabled={mixWord}
-                            />
-                            </Grid>
-                            <Grid item>
-                            <Input
-                                value={wordLength === "a" ? minWordLength : Number(wordLength)}
-                                size="small"
-                                onChange={handleWordLengthInputChange}
-                                onBlur={handleWordLengthBlur}
-                                disabled={mixWord}
-                                inputProps={{
-                                    step: 1,
-                                    min: {minWordLength},
-                                    max: {maxWordLength},
-                                    type: 'number',
-                                    'aria-labelledby': 'word-length-slider-label',
-                                }}
-                            />
-                            </Grid>
-                        </Grid>
-                    </Box>
+                                color="success"
+                                >
+                                <MenuItem value={"5"}>5</MenuItem>
+                                <MenuItem value={"6"}>6</MenuItem>
+                                <MenuItem value={"7"}>7</MenuItem>
+                                <MenuItem value={"a"}>Mixed</MenuItem>
+                            </Select>
+                    </FormControl>
                     
                     <br />
-                    <Tooltip placement="top" title="If you select this, all words will be used in game">
-                        <FormControlLabel
-                            control={<Android12Switch checked={mixWord} onChange={handleMixWord} />}
-                            label={<Typography variant="body2">Mix All Words</Typography>}
-                            labelPlacement="start"
-                            style={{marginLeft:"0px"}}
-                            
-                        />
-                    </Tooltip>
+
                 </div>
                 :
                 // Player View
