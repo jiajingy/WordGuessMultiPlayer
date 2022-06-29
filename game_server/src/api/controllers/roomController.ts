@@ -2,9 +2,11 @@ import { ConnectedSocket, MessageBody, OnMessage, SocketController, SocketIO, So
 import { Server, Socket } from "socket.io";
 import { RoomHelper } from "../helpers/roomHelper";
 
+const gameConfig = require("../../gameConfig.json");
+
 @SocketController()
 export class RoomController {
-    roomCodeLength = 4;
+    
     roomList = {};
     
     roomHelper = new RoomHelper();
@@ -21,9 +23,9 @@ export class RoomController {
             console.log("creating room...");
 
             // Generate an unique room code
-            let newRoomCode = this.roomHelper.generateRoomCode(this.roomCodeLength);
+            let newRoomCode = this.roomHelper.generateRoomCode(gameConfig.GAME_CODE_LENGTH);
             while (newRoomCode in this.roomList)
-                newRoomCode = this.roomHelper.generateRoomCode(this.roomCodeLength);
+                newRoomCode = this.roomHelper.generateRoomCode(gameConfig.GAME_CODE_LENGTH);
             console.log("got new room code: ", newRoomCode);
 
             console.log("joining new room...");
@@ -43,7 +45,8 @@ export class RoomController {
                 "roomCode": newRoomCode,
                 "internalRoomNo": newRoomCode,
                 "gameSettings": this.roomHelper.defaultGameSettings(),
-                "playerList": playerList
+                "playerList": playerList,
+                "gameData": this.roomHelper.defaultGameData()
             }
 
             // Send back to client
@@ -72,8 +75,8 @@ export class RoomController {
             console.log(connectedSockets.size);
             console.log(this.roomList[message.roomCode]);
 
-            if (connectedSockets && connectedSockets.size === 20){
-                socket.emit("join_room_error", {
+            if (connectedSockets && connectedSockets.size === gameConfig.GAME_MAX_PLAYER){
+                socket.emit("room_join_error", {
                     error: "Room is full please choose another room to play!"
                 });
             }else{
@@ -126,7 +129,7 @@ export class RoomController {
     public async UpdateGameRoomSettings(@SocketIO() io: Server, @ConnectedSocket() socket: Socket, @MessageBody() message: any){
         try{
             this.roomList[message.roomCode]["gameSettings"] = message.gameSettings;
-            console.log(message.roomCode + " game room updated");
+            console.log(message.roomCode + " game room updated. diff:" + this.roomList[message.roomCode].gameSettings.difficulty + ", wordLength:" + this.roomList[message.roomCode].gameSettings.wordLength);
             io.in(message.roomCode).emit("on_game_room_update", this.roomList[message.roomCode]);
         }catch(e){
             console.log("errored?");

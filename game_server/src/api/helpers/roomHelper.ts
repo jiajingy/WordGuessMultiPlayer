@@ -10,6 +10,14 @@ export class RoomHelper {
         }
     }
 
+    public defaultGameData(){
+        return {
+            "inGame": false,
+            "lastWinner": "",
+            "gameRoundData": {}
+        }
+    }
+
     public generateRoomCode(codeLength: number){
         let base = "ABCEDFGHIJKLMNOPQRSTUVWXYZ1234567890";
         let result = "";
@@ -54,6 +62,7 @@ export class RoomHelper {
                         this.printRoomPlayerDetail(roomList);
                         const ip = Object.keys(roomList[roomCode]["playerList"][0])[0];
                         roomList[roomCode]["playerList"][idx][ip]["role"]=1;
+                        this.printRoomPlayerDetail(roomList);
                         // Once left, needs to send game room update broadcast to the room.
                         io.in(roomCode).emit("on_game_room_update", roomList[roomCode]);
                     }

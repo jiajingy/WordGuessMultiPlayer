@@ -1,39 +1,22 @@
 import * as React from 'react';
-import Button from '@mui/material/Button';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import Slider from '@mui/material/Slider';
-import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import MuiInput from '@mui/material/Input';
-import { styled } from '@mui/material/styles';
-import AbcRoundedIcon from '@mui/icons-material/AbcRounded';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
-import LoadingButton from '@mui/lab/LoadingButton';
-import DoNotDisturbAltOutlinedIcon from '@mui/icons-material/DoNotDisturbAltOutlined';
-import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
-import Stack from '@mui/material/Stack';
 import Container from '@mui/material/Container';
-import Divider from '@mui/material/Divider';
-import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
-import PasswordIcon from '@mui/icons-material/Password';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import BuildIcon from '@mui/icons-material/Build';
+import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import StarsIcon from '@mui/icons-material/Stars';
 import { useLocation, useNavigate } from 'react-router-dom';
 import gameContext from '../../gameContext';
 import gameService from '../../services/gameService';
 import socketService from '../../services/socketService';
+import { IconButton } from '@mui/material';
+import { VerticalAlignCenter } from '@mui/icons-material';
 
 
 export default function RoomPlayerSection(props: any) {
@@ -49,6 +32,13 @@ export default function RoomPlayerSection(props: any) {
         setPlayerList(newPlayerList);
     }
 
+    const [gameData, setGameData] = React.useState(state.gameData);
+    const handleFindLastRoundWinner = () => {
+
+    }
+    console.log("asdsad");
+    console.log(playerList);
+    console.log(gameData);
     const handleGameRoomUpdate = () => {
         if (socketService.socket){
             gameService.onGameRoomUpdate(socketService.socket, (newGameRoom:any) => {
@@ -76,7 +66,7 @@ export default function RoomPlayerSection(props: any) {
             <br />
             
             <Grid container spacing={1}>
-                <Grid item>
+                <Grid item xs={11}>
                     <Typography sx={{ mb: 2 }} variant="h6" component="div">
                         Players
                     </Typography>
@@ -85,12 +75,17 @@ export default function RoomPlayerSection(props: any) {
                             playerList.map((player:object)=>{                              
                                 const playerObj = Object.values(player)[0];
                                 const playerIp = Object.keys(player)[0];
-                                return <ListItem key={playerIp}>
+                                return <ListItem key={playerIp}
+                                        secondaryAction={
+                                            
+                                            <></>
+                                        }
+                                    >
                                     <ListItemIcon>
                                         {playerObj.role === 1 ? <StarsIcon color="error"/> : <AccountCircleIcon />}
                                     </ListItemIcon>
                                     <ListItemText
-                                        primary={playerObj.playerName}
+                                        primary={gameData.lastWinner===playerIp ?<Box><Typography variant="h6"><EmojiEventsOutlinedIcon color="primary" style={{verticalAlign:"middle"}}/>{playerObj.playerName}</Typography></Box> : playerObj.playerName}
                                         secondary={playerObj.role === 1 ? "Game Master" : "Player"}
                                     />
                                 </ListItem>

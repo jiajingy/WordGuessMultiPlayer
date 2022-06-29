@@ -39,7 +39,7 @@ export default function JoinRoomDialog(props: any) {
     const { setInRoom, isInRoom, ipAddr } = React.useContext(gameContext); 
 
     const navigate = useNavigate();
-    const goToGameRoomPage = (roomCode: any, internalRoomId: any, gameSettings: any, playerList: any) => navigate("/" + roomCode, {state:{roomCode:roomCode, internalRoomId: internalRoomId, gameSettings: gameSettings, playerList:playerList}});
+    const goToGameRoomPage = (roomCode: any, internalRoomId: any, gameSettings: any, playerList: any, gameData: any) => navigate("/" + roomCode, {state:{roomCode:roomCode, internalRoomId: internalRoomId, gameSettings: gameSettings, playerList:playerList, gameData:gameData}});
 
     const [playerName, setPlayerName] = React.useState("");
     const [playerNameErrorMessage, setPlayerNameErrorMessage] = React.useState("");
@@ -106,7 +106,10 @@ export default function JoinRoomDialog(props: any) {
         setJoiningRoom(true);
 
         const joinedRoomResult = await gameService.JoinGameRoom(socket, roomCode, playerName, ipAddr).catch((err)=>{
-            handleSetAlertContent("Cannot join room, double check your room code.");
+            if (err.error)
+                handleSetAlertContent(err.error);
+            else
+                handleSetAlertContent("Cannot join room, double check your room code.");
             handleSetShowAlert(true);
             setJoiningRoom(false);
         });
@@ -125,7 +128,8 @@ export default function JoinRoomDialog(props: any) {
             joinedRoomResult.roomCode,
             joinedRoomResult.interalRoomId,
             joinedRoomResult.gameSettings,
-            joinedRoomResult.playerList
+            joinedRoomResult.playerList,
+            joinedRoomResult.gameData
         );
         
     }

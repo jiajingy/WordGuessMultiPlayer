@@ -4,17 +4,12 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import Slider from '@mui/material/Slider';
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import MuiInput from '@mui/material/Input';
 import { styled } from '@mui/material/styles';
-import AbcRoundedIcon from '@mui/icons-material/AbcRounded';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import LoadingButton from '@mui/lab/LoadingButton';
-import DoNotDisturbAltOutlinedIcon from '@mui/icons-material/DoNotDisturbAltOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
@@ -25,14 +20,10 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import { useLocation, useNavigate } from 'react-router-dom';
 import gameContext from '../../gameContext';
 import gameService from '../../services/gameService';
-import publicIp from 'public-ip';
-import { internalIpV4 } from 'internal-ip';
 import socketService from '../../services/socketService';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import { FormGroup, InputAdornment, TextField } from '@mui/material';
-import Checkbox from '@mui/material/Checkbox';
 
 
 const Android12Switch = styled(Switch)(({ theme }) => ({
@@ -362,7 +353,7 @@ export default function RoomGameSettings(props: any) {
 
                     <Box sx={{width: 500, maxWidth:"100%"}}>
                         <FormControl variant="standard" fullWidth>
-                            <TextField aria-readonly fullWidth label="Word Length" value={gameSettings.wordLength}/>
+                            <TextField aria-readonly fullWidth label="Word Length" value={gameSettings.wordLength==="a"?"Mixed":gameSettings.wordLength}/>
                         </FormControl>
                     </Box>
                     

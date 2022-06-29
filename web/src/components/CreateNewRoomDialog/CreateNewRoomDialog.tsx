@@ -44,7 +44,7 @@ export default function CreateNewRoomDialog(props: any) {
     } = React.useContext(gameContext);
 
     const navigate = useNavigate();
-    const goToGameRoomPage = (roomCode: any, internalRoomId: any, gameSettings: any, playerList: any) => navigate("/" + roomCode, {state:{roomCode:roomCode, internalRoomId: internalRoomId, gameSettings: gameSettings, playerList:playerList}});
+    const goToGameRoomPage = (roomCode: any, internalRoomId: any, gameSettings: any, playerList: any, gameData: any) => navigate("/" + roomCode, {state:{roomCode:roomCode, internalRoomId: internalRoomId, gameSettings: gameSettings, playerList:playerList, gameData:gameData}});
 
     const [playerName, setPlayerName] = React.useState("");
     const [playerNameErrorMessage, setPlayerNameErrorMessage] = React.useState("");
@@ -109,7 +109,8 @@ export default function CreateNewRoomDialog(props: any) {
                 createGameRoomResult.roomCode,
                 createGameRoomResult.internalRoomId,
                 createGameRoomResult.gameSettings,
-                createGameRoomResult.playerList
+                createGameRoomResult.playerList,
+                createGameRoomResult.gameData
             );        
         }
 
