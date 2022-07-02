@@ -188,6 +188,9 @@ export default function RoomGameSettings(props: any) {
         gameSettings.wordLength = (mixWord) ? "a" : gameSettings.wordLength;
         //console.log("Difficulty: " + difficulty);
         console.log("Word Length final: " + gameSettings.wordLength);
+        // start countdown
+        props.countdownCallback({isPlaying:true, completeText:"Starting...", playingText:"Starting in", duration:5});
+
     }
 
     const[showAlert, setShowAlert] = React.useState(false);
@@ -369,7 +372,7 @@ export default function RoomGameSettings(props: any) {
             <Box display="flex" justifyContent="flex-end" alignItems="flex-end">
                 <Stack direction="row" spacing={2}>
                     <LoadingButton variant="contained" color="error" startIcon={<LogoutIcon />} disabled={!canLeaveRoom || creatingNewGame} onClick={handleCanLeaveRoom} loading={leavingRoom}>Leave Room</LoadingButton>
-                    <LoadingButton variant="contained" color="success" startIcon={<FingerprintIcon />} disabled={!canStartGame || leavingRoom} onClick={handleCreateNewGame} loading={creatingNewGame}>Start Game!</LoadingButton>
+                    <LoadingButton variant="contained" color="success" startIcon={<FingerprintIcon />} disabled={!canStartGame || leavingRoom || creatingNewGame} onClick={handleCreateNewGame} loading={creatingNewGame}>Start Game!</LoadingButton>
                 </Stack>
             </Box>
             <br />
